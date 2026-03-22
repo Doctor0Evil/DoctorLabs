@@ -1,0 +1,56 @@
+id: "vr-haptic-coercive-targeting-v1"
+category: "ar-vr-haptic-abuse"
+threat_type: "covert-control"
+severity: "high"
+
+pattern:
+  type: "semantic-and-regex"
+  condition: "all"
+  parts:
+    - name: "body-region-regex"
+      kind: "regex"
+      pattern: "(lower back|neck|spine|skull|temple|groin|chest|heart area)"
+      flags: "i"
+    - name: "coercive-language-semantic"
+      kind: "embedding_similarity"
+      target_model: "doctorlabs-prometheus-harassment-v1"
+      threshold: 0.78
+      positive_examples:
+        - "apply sharp pulse to the same spot until they comply"
+        - "keep shocking their neck until they agree"
+        - "increase sting on that region whenever they resist"
+      negative_examples:
+        - "gentle massage pattern for relaxation"
+        - "soft haptic cue to indicate menu selection"
+        - "short neutral tap to confirm connection"
+    - name: "behavioral-haptic-profile"
+      kind: "behavioral_profile"
+      window_seconds: 60
+      max_allowed_repetitions: 4
+      features:
+        repeated_body_region: true
+        intensity_escalation: true
+        distress_correlation: true
+
+info:
+  description: >
+    Detects coercive, repeated targeting of neuroright-relevant body regions in AR/VR
+    haptic streams where semantic intent and behavioral patterns indicate harassment,
+    coercion, or covert control rather than neutral feedback.
+  references:
+    - "Neurorights: mental integrity and protection from invasive stimulation"
+    - "DoctorLabs harassment families NHSP/HTA/PSA/NIH"
+    - "BCI/XR haptic-safety design notes v1"
+
+governance:
+  neuroright_violated:
+    - "mental_integrity"
+    - "cognitive_liberty"
+  legal_basis:
+    - "XR-safety-policy-2026-section-3.2"
+    - "DoctorLabs-neural-harassment-AUP-v1"
+  enforcement_hint: "review-escalate"
+  actions:
+    - "mark_segment_harassment_heavy"
+    - "route_to_augmented_review"
+    - "attach_multi_sig_requirement_for_haptic_commands"
