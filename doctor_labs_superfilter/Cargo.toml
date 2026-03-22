@@ -1,13 +1,387 @@
+# ==============================================================================
+# DOCTOR-LABS SUPERFILTER RUST CRATE CONFIGURATION
+# ==============================================================================
+# Version: 2026.03.23
+# Compliance: ALN-NanoNet HyperSafe Construct | EU AI Act | Neurorights Framework
+# Purpose: Core harassment detection and capability-preserving escalation engine
+# ==============================================================================
+
 [package]
 name = "doctor_labs_superfilter"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2021"
+rust-version = "1.75.0"
+authors = ["Doctor-Labs Research Division <research@doctor-labs.io>"]
+description = "Capability-preserving harassment detection engine for BCI/XR/neural interfaces"
+license = "MIT OR Apache-2.0"
+homepage = "https://github.com/doctor-labs/superfilter"
+repository = "https://github.com/doctor-labs/superfilter"
+documentation = "https://docs.rs/doctor_labs_superfilter"
+readme = "README.md"
+keywords = [
+    "neurorights",
+    "bci",
+    "harassment-detection",
+    "capability-safety",
+    "ai-safety",
+]
+categories = [
+    "security",
+    "web-programming",
+    "science",
+    "api-bindings",
+]
+exclude = [
+    ".gitignore",
+    ".github/",
+    "tests/",
+    "benches/",
+    "docs/",
+    "*.md",
+]
+
+# ==============================================================================
+# BUILD CONFIGURATION
+# ==============================================================================
+
+[build-dependencies]
+# Version information generation
+vergen = { version = "8.3", features = ["build", "git", "cargo"] }
+
+# ==============================================================================
+# RUNTIME DEPENDENCIES
+# ==============================================================================
+
+[dependencies]
+# ==============================================================================
+# Serialization / Deserialization
+# ==============================================================================
+serde = { version = "1.0", features = ["derive", "rc"] }
+serde_json = "1.0"
+
+# ==============================================================================
+# Error Handling
+# ==============================================================================
+thiserror = "1.0"
+anyhow = "1.0"
+
+# ==============================================================================
+# Logging and Tracing
+# ==============================================================================
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+log = "0.4"
+
+# ==============================================================================
+# Time and Date Handling
+# ==============================================================================
+chrono = { version = "0.4", features = ["serde", "clock"] }
+
+# ==============================================================================
+# Cryptography and Security
+# ==============================================================================
+# UUID generation for evidence bundles
+uuid = { version = "1.6", features = ["v4", "serde"] }
+
+# SHA-256 hashing for content verification
+sha2 = "0.10"
+
+# Digital signatures (Ed25519)
+ed25519 = "2.2"
+ed25519-dalek = { version = "2.1", features = ["serde"] }
+
+# Random number generation
+rand = "0.8"
+
+# ==============================================================================
+# Concurrency and Async
+# ==============================================================================
+tokio = { version = "1.35", features = ["full"], optional = true }
+async-trait = { version = "0.1", optional = true }
+
+# ==============================================================================
+# HTTP Client (for Rust core communication)
+# ==============================================================================
+reqwest = { version = "0.11", features = ["json", "rustls-tls"], optional = true }
+
+# ==============================================================================
+# Configuration Management
+# ==============================================================================
+config = { version = "0.14", optional = true }
+
+# ==============================================================================
+# Metrics and Monitoring
+# ==============================================================================
+metrics = { version = "0.22", optional = true }
+metrics-exporter-prometheus = { version = "0.13", optional = true }
+
+# ==============================================================================
+# Feature Flags
+# ==============================================================================
+[features]
+default = ["std"]
+
+# Standard library support (always enabled)
+std = []
+
+# Async runtime support
+async = ["tokio", "async-trait"]
+
+# HTTP client for remote Rust core communication
+http-client = ["reqwest", "tokio"]
+
+# Full configuration file support
+config-files = ["config"]
+
+# Metrics and monitoring export
+metrics = ["dep:metrics", "metrics-exporter-prometheus"]
+
+# Development and testing utilities
+dev-utils = []
+
+# Production hardening (strips debug info, enables optimizations)
+production = []
+
+# FIPS-compliant cryptography (requires special build)
+fips = []
+
+# ==============================================================================
+# Platform-Specific Dependencies
+# ==============================================================================
+
+[target.'cfg(target_os = "linux")'.dependencies]
+# Linux-specific optimizations
+libc = "0.2"
+
+[target.'cfg(target_os = "windows")'.dependencies]
+# Windows-specific support
+winapi = { version = "0.3", features = ["winbase", "winerror"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+# macOS-specific support
+security-framework = { version = "2.9", optional = true }
+
+# ==============================================================================
+# Library Configuration
+# ==============================================================================
 
 [lib]
 name = "doctor_labs_superfilter"
 path = "src/lib.rs"
+crate-type = ["lib", "rlib", "dylib"]
+doctest = true
+bench = true
+test = true
 
-[dependencies]
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-thiserror = "1.0"
+# ==============================================================================
+# Binary Targets (Optional CLI Tools)
+# ==============================================================================
+
+[[bin]]
+name = "superfilter-cli"
+path = "src/bin/cli.rs"
+required-features = ["async", "http-client"]
+test = true
+bench = false
+
+[[bin]]
+name = "superfilter-validator"
+path = "src/bin/validator.rs"
+required-features = ["config-files"]
+test = true
+bench = false
+
+# ==============================================================================
+# Test Configuration
+# ==============================================================================
+
+[dev-dependencies]
+# Testing framework
+criterion = { version = "0.5", features = ["html_reports"] }
+proptest = "1.4"
+quickcheck = "1.0"
+mockall = "0.12"
+
+# Async testing
+tokio = { version = "1.35", features = ["full", "test-util"] }
+tokio-test = "0.4"
+
+# HTTP mocking
+wiremock = "0.5"
+
+# Test logging
+env_logger = "0.10"
+test-log = "0.2"
+
+# ==============================================================================
+# Benchmark Configuration
+# ==============================================================================
+
+[[bench]]
+name = "harassment_detection_bench"
+path = "benches/harassment_detection_bench.rs"
+harness = false
+required-features = ["async"]
+
+[[bench]]
+name = "span_score_bench"
+path = "benches/span_score_bench.rs"
+harness = false
+
+# ==============================================================================
+# Documentation Configuration
+# ==============================================================================
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+targets = ["x86_64-unknown-linux-gnu"]
+
+# ==============================================================================
+# Linting Configuration
+# ==============================================================================
+
+[package.metadata.clippy]
+# Clippy configuration for code quality
+warn-on-all = true
+allow = [
+    "clippy::module_name_repetitions",
+    "clippy::struct_excessive_bools",
+]
+
+# ==============================================================================
+# Security Audit Configuration
+# ==============================================================================
+
+[package.metadata.audit]
+# Cargo-audit configuration for dependency security scanning
+ignore = [
+    # Example: RUSTSEC-2023-0000 (if there's a known issue with a workaround)
+]
+severity-threshold = "high"
+
+# ==============================================================================
+# Release Configuration
+# ==============================================================================
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+panic = "abort"
+strip = "symbols"
+debug = false
+rpath = false
+
+[profile.release.production]
+inherits = "release"
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+debug = false
+
+[profile.dev]
+opt-level = 0
+debug = true
+debug-assertions = true
+overflow-checks = true
+lto = false
+panic = "unwind"
+incremental = true
+codegen-units = 256
+
+[profile.test]
+opt-level = 1
+debug = true
+debug-assertions = true
+overflow-checks = true
+lto = false
+incremental = true
+codegen-units = 256
+
+[profile.bench]
+opt-level = 3
+debug = false
+lto = "thin"
+codegen-units = 1
+
+# ==============================================================================
+# Workspace Configuration (if part of larger workspace)
+# ==============================================================================
+
+[workspace]
+members = [
+    ".",
+    # Additional workspace members can be added here
+    # "doctor-labs-blacklist",
+    # "doctor-labs-gateway",
+]
+resolver = "2"
+
+# ==============================================================================
+# Badges and Status Indicators
+# ==============================================================================
+
+[badges]
+maintenance = { status = "actively-developed" }
+
+# ==============================================================================
+# Example Configuration
+# ==============================================================================
+
+[[example]]
+name = "basic_harassment_detection"
+path = "examples/basic_harassment_detection.rs"
+required-features = ["std"]
+
+[[example]]
+name = "capability_mode_escalation"
+path = "examples/capability_mode_escalation.rs"
+required-features = ["std"]
+
+[[example]]
+name = "evidence_bundle_creation"
+path = "examples/evidence_bundle_creation.rs"
+required-features = ["std"]
+
+[[example]]
+name = "neural_io_processing"
+path = "examples/neural_io_processing.rs"
+required-features = ["async"]
+
+# ==============================================================================
+# Package Metadata for Publishing
+# ==============================================================================
+
+[package.metadata.publish]
+# Registry configuration for publishing
+registry = "crates-io"
+verify = true
+
+# ==============================================================================
+# Dependency Version Pinning for Reproducibility
+# ==============================================================================
+
+# Critical dependencies pinned for security and stability
+[dependencies.serde]
+version = "=1.0.195"
+features = ["derive", "rc"]
+
+[dependencies.serde_json]
+version = "=1.0.111"
+
+[dependencies.uuid]
+version = "=1.6.1"
+features = ["v4", "serde"]
+
+[dependencies.tracing]
+version = "=0.1.40"
+
+[dependencies.chrono]
+version = "=0.4.31"
+features = ["serde", "clock"]
+
+# ==============================================================================
+# END OF CARGO.TOML
+# ==============================================================================
