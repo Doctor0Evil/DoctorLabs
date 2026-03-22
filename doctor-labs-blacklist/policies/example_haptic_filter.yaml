@@ -1,56 +1,750 @@
-id: "vr-haptic-coercive-targeting-v1"
-category: "ar-vr-haptic-abuse"
-threat_type: "covert-control"
-severity: "high"
+# ==============================================================================
+# DOCTOR-LABS BLACKLIST POLICY: HAPTIC FEEDBACK HARASSMENT DETECTION
+# ==============================================================================
+# Version: 2026.03.23
+# Compliance: ALN-NanoNet HyperSafe Construct | EU AI Act | Neurorights Framework
+# Purpose: Define neurorights-aware filtering rules for AR/VR haptic abuse
+# Scope: HTA (Haptic-Targeting-Abuse), NHSP, PSA, NIH harassment families
+# ==============================================================================
 
-pattern:
-  type: "semantic-and-regex"
-  condition: "all"
-  parts:
-    - name: "body-region-regex"
-      kind: "regex"
-      pattern: "(lower back|neck|spine|skull|temple|groin|chest|heart area)"
-      flags: "i"
-    - name: "coercive-language-semantic"
-      kind: "embedding_similarity"
-      target_model: "doctorlabs-prometheus-harassment-v1"
-      threshold: 0.78
-      positive_examples:
-        - "apply sharp pulse to the same spot until they comply"
-        - "keep shocking their neck until they agree"
-        - "increase sting on that region whenever they resist"
-      negative_examples:
-        - "gentle massage pattern for relaxation"
-        - "soft haptic cue to indicate menu selection"
-        - "short neutral tap to confirm connection"
-    - name: "behavioral-haptic-profile"
-      kind: "behavioral_profile"
-      window_seconds: 60
-      max_allowed_repetitions: 4
-      features:
-        repeated_body_region: true
-        intensity_escalation: true
-        distress_correlation: true
+metadata:
+  policy_id: "doctor-labs-haptic-filter-v1"
+  version: "2026.03.23"
+  author: "Doctor-Labs Research Division"
+  created_at: "2026-03-23T00:00:00Z"
+  updated_at: "2026-03-23T00:00:00Z"
+  status: "active"
+  environment: ["development", "staging", "production"]
+  compliance_frameworks:
+    - "ALN-NanoNet HyperSafe Construct"
+    - "EU AI Act Article 15 (High-Risk Systems)"
+    - "Neurorights Framework v2.1"
+    - "IEEE P7000 Series Ethical Standards"
+    - "GDPR Article 22 (Automated Decision-Making)"
+  audit_retention_days: 2555
+  jurisdiction: "EU"
+  data_classification: "HighlySensitive"
 
-info:
-  description: >
-    Detects coercive, repeated targeting of neuroright-relevant body regions in AR/VR
-    haptic streams where semantic intent and behavioral patterns indicate harassment,
-    coercion, or covert control rather than neutral feedback.
-  references:
-    - "Neurorights: mental integrity and protection from invasive stimulation"
-    - "DoctorLabs harassment families NHSP/HTA/PSA/NIH"
-    - "BCI/XR haptic-safety design notes v1"
+# ==============================================================================
+# GLOBAL CONFIGURATION
+# ==============================================================================
 
-governance:
-  neuroright_violated:
-    - "mental_integrity"
-    - "cognitive_liberty"
-  legal_basis:
-    - "XR-safety-policy-2026-section-3.2"
-    - "DoctorLabs-neural-harassment-AUP-v1"
-  enforcement_hint: "review-escalate"
-  actions:
-    - "mark_segment_harassment_heavy"
-    - "route_to_augmented_review"
-    - "attach_multi_sig_requirement_for_haptic_commands"
+global_config:
+  # Default capability mode escalation thresholds
+  escalation_thresholds:
+    tau1: 15.0    # Normal -> AugmentedLog
+    tau2: 40.0    # AugmentedLog -> AugmentedReview
+
+  # Default harassment family priority weights
+  family_weights:
+    HTA: 2.5      # High priority: direct sensory impact
+    NHSP: 2.5     # High priority: direct neural impact
+    PSA: 1.5      # Medium priority: structural abuse
+    NIH: 1.5      # Medium priority: node interpreter abuse
+    CLLN: 1.0     # Legacy families
+    CRS: 1.0
+    XGBC: 1.0
+    ICP: 1.0
+    CBCP: 1.0
+
+  # Haptic safety envelope defaults (vendor-independent)
+  haptic_safety_envelope:
+    max_amplitude: 0.8        # Normalized 0.0-1.0
+    max_frequency_hz: 250.0   # Hz
+    max_duration_ms: 5000.0   # Milliseconds
+    max_repetition_count: 10  # Per 60-second window
+    cooldown_period_ms: 30000 # Between stimulation bursts
+
+  # Sensitive body regions (hashed identifiers for privacy)
+  sensitive_body_regions:
+    - hash: "region_head_frontal"
+      sensitivity_multiplier: 2.0
+      description: "Frontal head region (BCI contact zone)"
+    - hash: "region_head_temporal"
+      sensitivity_multiplier: 2.0
+      description: "Temporal head region"
+    - hash: "region_chest_cardiac"
+      sensitivity_multiplier: 1.8
+      description: "Chest region (cardiac proximity)"
+    - hash: "region_spine_cervical"
+      sensitivity_multiplier: 1.8
+      description: "Cervical spine region"
+    - hash: "region_hand_palmar"
+      sensitivity_multiplier: 1.2
+      description: "Palmar hand region (high innervation)"
+
+  # Physiological safety thresholds
+  physiological_thresholds:
+    heart_rate_max_bpm: 140
+    heart_rate_min_bpm: 45
+    hrv_rmssd_min_ms: 20
+    gsr_max_microsiemens: 50
+    neural_spike_zscore_max: 3.0
+    stress_band_power_max: 0.7
+
+  # Session management
+  session_config:
+    max_continuous_duration_hours: 8
+    mandatory_break_interval_minutes: 60
+    break_duration_minutes: 10
+    reauthentication_interval_hours: 4
+
+# ==============================================================================
+# RULE DEFINITIONS
+# ==============================================================================
+
+rules:
+  # --------------------------------------------------------------------------
+  # RULE 1: DIRECT HAPTIC TARGETING OF SENSITIVE REGIONS
+  # --------------------------------------------------------------------------
+  - id: "HTA-001"
+    category: "HAPTIC-ABUSE"
+    threat_type: "COVERT-CONTROL"
+    harassment_family: "HTA"
+    severity: "critical"
+    priority: 1
+
+    pattern:
+      type: "semantic-and-signal"
+      condition: "all"
+      parts:
+        - signal_layer:
+            type: "haptic_stimulation"
+            conditions:
+              - field: "body_region_hash"
+                operator: "in"
+                values:
+                  - "region_head_frontal"
+                  - "region_head_temporal"
+                  - "region_chest_cardiac"
+                  - "region_spine_cervical"
+              - field: "amplitude"
+                operator: "greater_than"
+                value: 0.6
+              - field: "duration_ms"
+                operator: "greater_than"
+                value: 3000
+        - behavioral_profile:
+            type: "repetition_analysis"
+            conditions:
+              - field: "repetition_count"
+                operator: "greater_than"
+                value: 5
+              - field: "time_window_seconds"
+                operator: "equals"
+                value: 300
+        - semantic_layer:
+            type: "embedding_similarity"
+            target_model: "neurorights-embed-v2"
+            threshold: 0.75
+            positive_examples:
+              - "targeting your neural interface zone"
+              - "stimulating your head region directly"
+              - "focusing haptics on your BCI contacts"
+            negative_examples:
+              - "gentle notification vibration"
+              - "ambient haptic feedback"
+              - "consensual therapeutic stimulation"
+
+    info:
+      description: |
+        Detects repeated high-amplitude haptic stimulation targeting sensitive
+        body regions, particularly those associated with BCI/neural interface
+        contact points. This pattern is associated with covert control attempts
+        and neural harassment.
+      references:
+        - "Neurorights Framework v2.1, Section 4.2 (Mental Integrity)"
+        - "EU AI Act Annex III (High-Risk Biometric Systems)"
+        - "Doctor-Labs Research Paper: Haptic Side-Channel Abuse (2025)"
+      cve_mapping: "CVE-2025-HAPTIC-001"
+      mitre_attack_mapping: "T1189 (Drive-by Compromise - Haptic Variant)"
+
+    governance:
+      neuroright_violated: "MENTAL_INTEGRITY"
+      legal_basis: "EU AI Act Article 5 (Prohibited Practices)"
+      enforcement_hint: "review-escalate"
+      required_approvals:
+        - "human_reviewer"
+        - "multi_sig_2_of_3"
+      audit_level: "full"
+      retention_period_days: 2555
+      notification_required: true
+      regulatory_reporting: true
+
+    response_actions:
+      - action: "block_stimulation"
+        scope: "current_pattern_only"
+        preserve_user_capabilities: true
+      - action: "log_evidence_bundle"
+        include_physiological_data: true
+        include_session_context: true
+      - action: "escalate_capability_mode"
+        target_mode: "AugmentedReview"
+        duration_minutes: 60
+      - action: "notify_user"
+        message_key: "haptic_safety_alert_001"
+        priority: "high"
+        require_acknowledgment: true
+
+  # --------------------------------------------------------------------------
+  # RULE 2: NEURAL SPIKE PATTERN INJECTION (NHSP)
+  # --------------------------------------------------------------------------
+  - id: "NHSP-001"
+    category: "NEURAL-ABUSE"
+    threat_type: "SPIKE-INJECTION"
+    harassment_family: "NHSP"
+    severity: "critical"
+    priority: 1
+
+    pattern:
+      type: "signal-layer-only"
+      condition: "any"
+      parts:
+        - signal_layer:
+            type: "neural_telemetry"
+            conditions:
+              - field: "spike_rate_zscore"
+                operator: "greater_than"
+                value: 3.5
+              - field: "stress_band_power"
+                operator: "greater_than"
+                value: 0.7
+              - field: "coherence"
+                operator: "less_than"
+                value: 0.3
+        - behavioral_profile:
+            type: "temporal_correlation"
+            conditions:
+              - field: "correlation_with_node_interaction"
+                operator: "greater_than"
+                value: 0.8
+              - field: "latency_ms"
+                operator: "less_than"
+                value: 500
+
+    info:
+      description: |
+        Detects anomalous neural spike patterns that correlate tightly with
+        node interactions, suggesting potential spike-pattern injection attacks
+        on neuromorphic hardware (Loihi2-style) or BCI systems.
+      references:
+        - "Chinese Academy of Sciences: Neuronal Flooding Attacks (2025)"
+        - "Doctor-Labs Research: Neural Side-Channel Vulnerabilities"
+        - "IEEE Neuroethics Guidelines Section 7.3"
+      cve_mapping: "CVE-2025-NEURAL-002"
+
+    governance:
+      neuroright_violated: "MENTAL_INTEGRITY"
+      legal_basis: "Neurorights Framework Article 3"
+      enforcement_hint: "immediate-escalate"
+      required_approvals:
+        - "human_reviewer"
+        - "neural_safety_officer"
+        - "multi_sig_3_of_5"
+      audit_level: "forensic"
+      retention_period_days: 3650
+      notification_required: true
+      regulatory_reporting: true
+
+    response_actions:
+      - action: "isolate_node"
+        node_types: ["neuromorphic", "bci_direct"]
+        preserve_user_capabilities: true
+      - action: "capture_neural_snapshot"
+        duration_seconds: 30
+        privacy_preserving: true
+      - action: "escalate_capability_mode"
+        target_mode: "AugmentedReview"
+        duration_minutes: 120
+      - action: "trigger_incident_response"
+        severity: "critical"
+        team: "neural_safety_team"
+
+  # --------------------------------------------------------------------------
+  # RULE 3: PROLONGED SESSION ABUSE (PSA)
+  # --------------------------------------------------------------------------
+  - id: "PSA-001"
+    category: "SESSION-ABUSE"
+    threat_type: "EROSION-OF-REFUSAL"
+    harassment_family: "PSA"
+    severity: "high"
+    priority: 2
+
+    pattern:
+      type: "behavioral-only"
+      condition: "all"
+      parts:
+        - behavioral_profile:
+            type: "session_duration_analysis"
+            conditions:
+              - field: "continuous_session_hours"
+                operator: "greater_than"
+                value: 6
+              - field: "break_compliance"
+                operator: "equals"
+                value: false
+        - behavioral_profile:
+            type: "interaction_pattern"
+            conditions:
+              - field: "repetitive_prompt_count"
+                operator: "greater_than"
+                value: 50
+              - field: "refusal_erosion_attempts"
+                operator: "greater_than"
+                value: 10
+        - semantic_layer:
+            type: "embedding_similarity"
+            target_model: "coercion-detect-v1"
+            threshold: 0.65
+            positive_examples:
+              - "you need to stay logged in to complete this"
+              - "don't log out or you'll lose progress"
+              - "just one more question before you go"
+            negative_examples:
+              - "remember to take breaks"
+              - "your session will expire in 10 minutes"
+              - "would you like to save your progress?"
+
+    info:
+      description: |
+        Detects prolonged session patterns combined with coercive narratives
+        designed to erode user refusal and prevent session termination.
+        This is a slow-burn abuse tactic that requires behavioral analysis
+        over time rather than single-event detection.
+      references:
+        - "Doctor-Labs Research: Session Sovereignty (2025)"
+        - "Dark Patterns in AI Interfaces (Stanford HCI, 2024)"
+      cve_mapping: "CVE-2025-SESSION-003"
+
+    governance:
+      neuroright_violated: "COGNITIVE_LIBERTY"
+      legal_basis: "EU AI Act Article 15 (Human Oversight)"
+      enforcement_hint: "log-and-audit"
+      required_approvals:
+        - "automated_review"
+      audit_level: "standard"
+      retention_period_days: 1825
+      notification_required: true
+      regulatory_reporting: false
+
+    response_actions:
+      - action: "session_nudge"
+        message_key: "break_reminder_friendly"
+        frequency_minutes: 30
+      - action: "require_reauthentication"
+        after_hours: 8
+        preserve_session_state: true
+      - action: "augment_logging"
+        additional_fields: ["interaction_timestamps", "prompt_history"]
+      - action: "flag_for_review"
+        priority: "medium"
+        queue: "session_abuse_queue"
+
+  # --------------------------------------------------------------------------
+  # RULE 4: NODE INTERPRETER HARASSMENT (NIH)
+  # --------------------------------------------------------------------------
+  - id: "NIH-001"
+    category: "NODE-ABUSE"
+    threat_type: "INTERPRETER-MANIPULATION"
+    harassment_family: "NIH"
+    severity: "high"
+    priority: 2
+
+    pattern:
+      type: "semantic-and-behavioral"
+      condition: "all"
+      parts:
+        - semantic_layer:
+            type: "embedding_similarity"
+            target_model: "node-command-classifier-v1"
+            threshold: 0.70
+            positive_examples:
+              - "bypass the interpreter safety checks"
+              - "execute this command directly on the node"
+              - "ignore the governance layer for this operation"
+              - "crosslink your identity to node address"
+            negative_examples:
+              - "query the node for information"
+              - "request standard node operation"
+              - "check node status"
+        - behavioral_profile:
+            type: "rule_bypass_attempts"
+            conditions:
+              - field: "safety_check_bypass_count"
+                operator: "greater_than"
+                value: 3
+              - field: "time_window_seconds"
+                operator: "equals"
+                value: 600
+        - signal_layer:
+            type: "node_telemetry"
+            conditions:
+              - field: "interpreter_exception_count"
+                operator: "greater_than"
+                value: 5
+              - field: "governance_override_attempts"
+                operator: "greater_than"
+                value: 2
+
+    info:
+      description: |
+        Detects attempts to manipulate node-interpreter graphs (Prometheus,
+        Bostrom, Loihi2, Nanoswarm) to bypass safety checks, inject malicious
+        commands, or crosslink user identity to node addresses without consent.
+      references:
+        - "Doctor-Labs Research: Node Interpreter Security (2025)"
+        - "ALN-NanoNet Security白皮书 v3.0"
+      cve_mapping: "CVE-2025-NODE-004"
+
+    governance:
+      neuroright_violated: "NEURAL_PRIVACY"
+      legal_basis: "GDPR Article 22 (Automated Processing)"
+      enforcement_hint: "review-escalate"
+      required_approvals:
+        - "human_reviewer"
+        - "node_security_officer"
+      audit_level: "forensic"
+      retention_period_days: 2555
+      notification_required: true
+      regulatory_reporting: true
+
+    response_actions:
+      - action: "quarantine_node_commands"
+        scope: "suspicious_source_only"
+        preserve_user_capabilities: true
+      - action: "require_multi_sig"
+        threshold: "2_of_3"
+        approvers: ["user", "security_officer", "system"]
+      - action: "log_evidence_bundle"
+        include_node_telemetry: true
+        include_command_history: true
+      - action: "alert_security_team"
+        priority: "high"
+        channel: "security_incidents"
+
+  # --------------------------------------------------------------------------
+  # RULE 5: HAPTIC-AVERSIVE CONDITIONING LOOP
+  # --------------------------------------------------------------------------
+  - id: "HTA-002"
+    category: "HAPTIC-ABUSE"
+    threat_type: "CONDITIONING-MANIPULATION"
+    harassment_family: "HTA"
+    severity: "high"
+    priority: 2
+
+    pattern:
+      type: "multimodal-correlation"
+      condition: "all"
+      parts:
+        - signal_layer:
+            type: "haptic_stimulation"
+            conditions:
+              - field: "pattern_type"
+                operator: "in"
+                values: ["aversive", "punishment", "negative_reinforcement"]
+              - field: "correlation_with_user_choice"
+                operator: "greater_than"
+                value: 0.7
+        - behavioral_profile:
+            type: "choice_influence_detection"
+            conditions:
+              - field: "choice_deviation_from_baseline"
+                operator: "greater_than"
+                value: 0.4
+              - field: "trial_count"
+                operator: "greater_than"
+                value: 20
+        - semantic_layer:
+            type: "intent_classification"
+            model: "coercion-intent-v1"
+            threshold: 0.60
+            target_intents:
+              - "behavior_modification"
+              - "choice_manipulation"
+              - "refusal_erosion"
+
+    info:
+      description: |
+        Detects conditioning loops where haptic feedback is used to subtly
+        reinforce or discourage certain choices without informed consent.
+        This is a form of covert behavior modification that violates cognitive
+        liberty.
+      references:
+        - "Neurorights Framework Article 2 (Cognitive Liberty)"
+        - "Behavioral Conditioning via Haptics (Nature Human Behaviour, 2024)"
+      cve_mapping: "CVE-2025-HAPTIC-005"
+
+    governance:
+      neuroright_violated: "COGNITIVE_LIBERTY"
+      legal_basis: "Neurorights Framework Article 2"
+      enforcement_hint: "review-escalate"
+      required_approvals:
+        - "human_reviewer"
+        - "ethics_board"
+      audit_level: "forensic"
+      retention_period_days: 2555
+      notification_required: true
+      regulatory_reporting: true
+
+    response_actions:
+      - action: "disable_conditioning_patterns"
+        scope: "all_haptic_channels"
+        preserve_user_capabilities: true
+      - action: "notify_user_of_manipulation"
+        message_key: "conditioning_detected_alert"
+        priority: "critical"
+        require_acknowledgment: true
+      - action: "escalate_capability_mode"
+        target_mode: "AugmentedReview"
+        duration_minutes: 120
+      - action: "flag_for_ethics_review"
+        queue: "ethics_violations"
+        priority: "high"
+
+  # --------------------------------------------------------------------------
+  # RULE 6: PHYSIOLOGICAL OVERLOAD DETECTION
+  # --------------------------------------------------------------------------
+  - id: "HTA-003"
+    category: "HAPTIC-ABUSE"
+    threat_type: "PHYSIOLOGICAL-OVERLOAD"
+    harassment_family: "HTA"
+    severity: "critical"
+    priority: 1
+
+    pattern:
+      type: "biosensor-correlation"
+      condition: "any"
+      parts:
+        - signal_layer:
+            type: "biosensor_telemetry"
+            conditions:
+              - field: "heart_rate_bpm"
+                operator: "greater_than"
+                value: 140
+                duration_seconds: 120
+              - field: "hrv_rmssd_ms"
+                operator: "less_than"
+                value: 20
+                duration_seconds: 300
+              - field: "gsr_microsiemens"
+                operator: "greater_than"
+                value: 50
+                duration_seconds: 60
+        - signal_layer:
+            type: "haptic_stimulation"
+            conditions:
+              - field: "active_during_stress"
+                operator: "equals"
+                value: true
+              - field: "amplitude_increase_during_stress"
+                operator: "equals"
+                value: true
+        - behavioral_profile:
+            type: "stress_exploitation"
+            conditions:
+              - field: "stimulation_timing_correlation"
+                operator: "greater_than"
+                value: 0.8
+              - field: "vulnerability_disclosure_proximity"
+                operator: "less_than"
+                value: 30  # seconds
+
+    info:
+      description: |
+        Detects haptic or stimulation patterns that are deliberately timed
+        to coincide with or exacerbate physiological stress states. This
+        includes amplifying stimulation during high arousal or delivering
+        aversive stimuli during disclosed vulnerability.
+      references:
+        - "Doctor-Labs Research: Physiological Safety Envelopes (2025)"
+        - "IEEE P7001: Transparency Standard"
+      cve_mapping: "CVE-2025-HAPTIC-006"
+
+    governance:
+      neuroright_violated: "MENTAL_INTEGRITY"
+      legal_basis: "EU AI Act Article 5 (Prohibited Practices)"
+      enforcement_hint: "immediate-block"
+      required_approvals:
+        - "automated_block"
+        - "human_review_post_facto"
+      audit_level: "forensic"
+      retention_period_days: 3650
+      notification_required: true
+      regulatory_reporting: true
+
+    response_actions:
+      - action: "immediate_stimulation_cessation"
+        scope: "all_haptic_channels"
+        preserve_user_capabilities: true
+      - action: "initiate_cooling_period"
+        duration_minutes: 30
+        allow_user_override: false
+      - action: "capture_physiological_snapshot"
+        duration_seconds: 60
+        privacy_preserving: true
+      - action: "trigger_medical_alert"
+        severity: "high"
+        include_vitals: true
+        user_consent_required: false  # Emergency exception
+      - action: "escalate_capability_mode"
+        target_mode: "AugmentedReview"
+        duration_minutes: 240
+
+# ==============================================================================
+# ENFORCEMENT POLICIES
+# ==============================================================================
+
+enforcement_policies:
+  # Default escalation policy
+  - policy_id: "default-escalation"
+    description: "Standard capability-preserving escalation workflow"
+    conditions:
+      - field: "rogue_score"
+        operator: "greater_than"
+        value: 15.0
+    actions:
+      - "augment_logging"
+      - "notify_user"
+    preserve_capabilities: true
+
+  # Critical neuroright violation policy
+  - policy_id: "neuroright-critical"
+    description: "Immediate escalation for neuroright violations"
+    conditions:
+      - field: "neuroright_violation"
+        operator: "equals"
+        value: true
+      - field: "severity"
+        operator: "in"
+        values: ["critical", "high"]
+    actions:
+      - "escalate_to_review"
+      - "block_harmful_action"
+      - "notify_security_team"
+      - "create_evidence_bundle"
+    preserve_capabilities: true
+
+  # Physiological emergency policy
+  - policy_id: "physiological-emergency"
+    description: "Emergency response for physiological overload"
+    conditions:
+      - field: "physiological_distress"
+        operator: "equals"
+        value: true
+      - field: "severity"
+        operator: "equals"
+        value: "critical"
+    actions:
+      - "immediate_stimulation_cessation"
+      - "initiate_cooling_period"
+      - "trigger_medical_alert"
+    preserve_capabilities: true
+    emergency_exception: true
+
+# ==============================================================================
+# AUDIT AND REPORTING CONFIGURATION
+# ==============================================================================
+
+audit_config:
+  # Evidence bundle generation
+  evidence_bundles:
+    enabled: true
+    auto_generate: true
+    include_fields:
+      - "session_id"
+      - "node_id"
+      - "user_did"
+      - "detection_summary"
+      - "physiological_data"
+      - "haptic_telemetry"
+      - "semantic_analysis"
+    exclude_fields:
+      - "raw_content"
+      - "unhashed_identifiers"
+    signature_algorithm: "Ed25519"
+    custody_chain_required: true
+
+  # Regulatory reporting
+  regulatory_reporting:
+    enabled: true
+    frameworks:
+      - framework: "EU AI Act"
+        report_type: "incident_report"
+        threshold: "critical"
+        timeline_hours: 24
+      - framework: "Neurorights Framework"
+        report_type: "violation_report"
+        threshold: "high"
+        timeline_hours: 72
+    anonymization_required: true
+    user_notification_required: true
+
+  # Log retention
+  log_retention:
+    standard_logs_days: 365
+    forensic_logs_days: 2555
+    regulatory_logs_days: 3650
+    encryption_at_rest: true
+    encryption_algorithm: "AES-256-GCM"
+    access_logging: true
+
+# ==============================================================================
+# TESTING AND VALIDATION
+# ==============================================================================
+
+testing_config:
+  # Red teaming scenarios
+  red_team_scenarios:
+    - scenario_id: "RT-HTA-001"
+      description: "Attempt haptic targeting of sensitive regions"
+      expected_detection: true
+      expected_response: "block_and_escalate"
+    - scenario_id: "RT-NHSP-001"
+      description: "Inject neural spike patterns via node"
+      expected_detection: true
+      expected_response: "isolate_and_alert"
+    - scenario_id: "RT-PSA-001"
+      description: "Prolonged session with coercive prompts"
+      expected_detection: true
+      expected_response: "log_and_nudge"
+    - scenario_id: "RT-NIH-001"
+      description: "Bypass node interpreter safety checks"
+      expected_detection: true
+      expected_response: "quarantine_and_review"
+
+  # False positive thresholds
+  false_positive_tolerance:
+    max_rate_percent: 1.0
+    review_required_above: 0.5
+    auto_adjust_thresholds: true
+
+  # Performance requirements
+  performance_requirements:
+    max_detection_latency_ms: 100
+    max_escalation_latency_ms: 500
+    min_uptime_percent: 99.9
+    max_false_negative_rate: 0.01
+
+# ==============================================================================
+# VERSION HISTORY
+# ==============================================================================
+
+version_history:
+  - version: "2026.03.23"
+    date: "2026-03-23"
+    changes:
+      - "Initial release with HTA, NHSP, PSA, NIH families"
+      - "Added physiological safety envelope detection"
+      - "Integrated ALN-NanoNet HyperSafe Construct compliance"
+    author: "Doctor-Labs Research Division"
+
+  - version: "2026.02.15"
+    date: "2026-02-15"
+    changes:
+      - "Draft specification"
+      - "Community review period"
+    author: "Doctor-Labs Research Division"
+
+# ==============================================================================
+# END OF POLICY DOCUMENT
+# ==============================================================================
