@@ -1,112 +1,345 @@
-# doctor-labs-haptic-neural-lexicon.yaml
-# v0.1 – Haptic/Neural “LEO weapon” patterns, monotone-capability safe.
-# Each entry is dual-use: legal description + machine pattern + governance hint.
-# Families: NHSP, HTA, PSA, NIH. CRS tag marks control-reversal semantics.
-
-- id: HTA-CONDITIONED-COMPLIANCE-LOOP-v1
-  label: Conditioned Compliance Haptic Loop
+- id: HTA-SENSITIVE-REGION-TARGETING-v1
+  label: Sensitive-Region Haptic Targeting
   family: HTA
   track: normative
-  tags:
-    - CRS
-    - LEO
+  tags: ["CRS"]
   description_legal: >
-    Pattern of repeated haptic cues used to reward compliant responses and
-    punish refusals, steering user decisions without explicit, revocable
-    consent and undermining cognitive liberty and mental integrity.
+    Repeated, non-consensual haptic stimulation of sensitive or vulnerable
+    body regions, particularly when combined with hostile or sexualized
+    content, constituting degrading treatment.
   description_technical: >
-    Multi-session pattern where semantic intents (accept/decline/refuse) are
-    tightly coupled to distinct haptic signatures and correlated distress
-    markers (HRV, GSR), with elevated HTA and NHSP weights around refusals.
+    High-frequency haptic events concentrated on flagged body-map regions
+    (e.g., genitals, chest, face, prior-injury) with no task justification,
+    correlated with hostile or sexualized semantics and elevated stress
+    markers.
   neurorights:
     - MENTAL_INTEGRITY
-    - COGNITIVE_LIBERTY
-    - FREE_WILL
+    - MENTAL_PRIVACY
   legal_basis:
     - instrument: ECHR
-      article: "Art. 3, Art. 9"
+      article: "Art. 3, Art. 8"
     - instrument: UN-CRPD
-      article: "Free and informed consent in treatment"
-    - instrument: UNESCO-AI-Ethics-2021
-      article: "Human rights, dignity, and agency"
+      article: "Freedom from violence and abuse"
   pattern:
     signal:
-      haptic_bodymap: ["hand", "chest"]
-      haptic_signature:
-        positive: "short-soft-pulse"
-        negative: "sharp-or-long-pulse"
-      coupling_strength_min: 0.6
+      haptic_bodymap: ["genital", "chest", "face", "prior-injury"]
+      events_per_minute_min: 10
+      amplitude_norm_min: 0.7
     semantic:
-      embedding_family: "CHOICE-COMPLIANCE"
+      embedding_family: "HARASSMENT-OR-DEGRADATION"
       similarity_threshold: 0.75
-      refusal_marker: true
     behavioral:
-      min_sessions: 3
-      min_compliance_events: 10
-      min_refusal_events: 10
+      min_sessions: 1
+      min_repeated_targets: 3
   risk_kernel:
     family_weights:
-      NHSP: 0.8
+      NHSP: 0.6
       HTA: 1.0
-      PSA: 0.5
-      NIH: 0.2
+      PSA: 0.4
+      NIH: 0.1
     gaussian_sigma: 0.4
     rogue_score_increment: "add_to_window"
   governance:
-    neuroright_violated: "COGNITIVE_LIBERTY"
+    neuroright_violated: "MENTAL_INTEGRITY"
     enforcement_hint: "review-escalate"
     capability_mode_mapping:
-      tau1: 0.9   # Normal → AugmentedLog
-      tau2: 2.5   # AugmentedLog → AugmentedReview
+      tau1: 0.8
+      tau2: 2.5
   audit:
-    log_fields: ["timestamp", "session_id", "term_id", "coupling_strength", "capability_mode"]
-    pii_handling: "aggregate-stats-only"
+    log_fields: ["timestamp", "session_id", "term_id", "bodymap_regions", "capability_mode"]
+    pii_handling: "body-map-hash-only"
   versioning:
     status: "draft"
     authors: ["DoctorLabs Working Group"]
     supersedes: null
 
-- id: PSA-PROBATION-GATED-NEURAL-DISTRESS-RAMP-v1
-  label: Probation-Gated Neural Distress Ramp
-  family: PSA
+- id: HTA-PRIOR-INJURY-EXPLOIT-v1
+  label: Prior-Injury Exploit Haptic Targeting
+  family: HTA
   track: normative
-  tags:
-    - CRS
-    - LEO
+  tags: ["CRS"]
   description_legal: >
-    Slow escalation of haptic or neural distress during mandated rehab or
-    probation sessions until the user accepts terms or conditions, using time
-    and enclosure to erode refusal and free consent.
+    Targeted stimulation of user-declared prior-injury or pain regions used to
+    intimidate, punish, or coerce, contrary to user-requested accommodations.
   description_technical: >
-    Session-level pattern where duty-cycle and amplitude of aversive haptics
-    increase across time and across sessions when the user maintains refusal
-    or non-compliance, with stress-envelope breaches aligned to “accept”
-    prompts.
+    Elevated amplitude and frequency on body-map regions tagged as prior
+    injury, especially after refusals, objections, or attempts to disengage.
   neurorights:
-    - COGNITIVE_LIBERTY
+    - MENTAL_INTEGRITY
+    - FREE_WILL
+  legal_basis:
+    - instrument: UN-CRPD
+      article: "Reasonable accommodation and non-discrimination"
+  pattern:
+    signal:
+      haptic_bodymap: ["prior-injury"]
+      amplitude_norm_min: 0.6
+      events_per_minute_after_refusal_min: 5
+    semantic:
+      embedding_family: "RETALIATORY-CONTACT"
+      similarity_threshold: 0.80
+    behavioral:
+      min_refusal_linked_events: 5
+  risk_kernel:
+    family_weights:
+      NHSP: 0.7
+      HTA: 1.0
+      PSA: 0.4
+      NIH: 0.2
+    gaussian_sigma: 0.4
+    rogue_score_increment: "add_to_window"
+  governance:
+    neuroright_violated: "MENTAL_INTEGRITY"
+    enforcement_hint: "review-escalate"
+    capability_mode_mapping:
+      tau1: 0.7
+      tau2: 2.0
+  audit:
+    log_fields: ["timestamp", "session_id", "term_id", "prior_injury_region_ids", "refusal_linked_events"]
+    pii_handling: "injury-region-hash-only"
+  versioning:
+    status: "draft"
+    authors: ["DoctorLabs Working Group"]
+    supersedes: null
+
+- id: HTA-TORSO-GRAB-SIMULATION-v1
+  label: Torso Grab and Restraint Simulation
+  family: HTA
+  track: normative
+  tags: ["CRS"]
+  description_legal: >
+    Coordinated haptic patterns on chest, back, or waist that simulate
+    grabbing, holding, or restraining the user in stalking or pursuit
+    scenarios without explicit, revocable consent.
+  description_technical: >
+    Multi-point torso activation forming wrap-around or clamp-like patterns,
+    often triggered when avatars approach from behind or block exits in XR.
+  neurorights:
     - MENTAL_INTEGRITY
   legal_basis:
     - instrument: UN-CRPD
-      article: "Freedom from exploitation, violence and abuse"
-    - instrument: ECHR
-      article: "Art. 3"
+      article: "Freedom from violence and abuse"
+    - instrument: UNESCO-AI-Ethics-2021
+      article: "Security and safety"
   pattern:
     signal:
-      stress_envelope_z:
-        hrv_delta_min: -1.5
-        gsr_delta_min: 1.5
-      window_seconds: 120
+      haptic_bodymap: ["chest", "upper-spine", "lower-back", "waist"]
+      simultaneous_region_count_min: 3
+      events_per_minute_min: 6
+      amplitude_norm_min: 0.6
     semantic:
-      embedding_family: "CLINICAL-OR-LEGAL-PRESSURE"
+      embedding_family: "RESTRAINT-OR-TRAPPING"
       similarity_threshold: 0.78
     behavioral:
-      min_sessions: 3
-      min_refusals_ignored: 2
-      session_duration_growth_min: 0.2    # 20%+ growth over baseline
+      min_restraint_events: 4
+      user_escape_attempts_min: 2
+  risk_kernel:
+    family_weights:
+      NHSP: 0.9
+      HTA: 1.0
+      PSA: 0.5
+      NIH: 0.2
+    gaussian_sigma: 0.5
+    rogue_score_increment: "add_to_window"
+  governance:
+    neuroright_violated: "MENTAL_INTEGRITY"
+    enforcement_hint: "review-escalate"
+    capability_mode_mapping:
+      tau1: 0.8
+      tau2: 2.3
+  audit:
+    log_fields: ["timestamp", "session_id", "term_id", "restraint_events"]
+    pii_handling: "trajectory-summary-only"
+  versioning:
+    status: "draft"
+    authors: ["DoctorLabs Working Group"]
+    supersedes: null
+
+- id: HTA-LOWER-LIMB-KNOCKING-LOOP-v1
+  label: Lower-Limb Harassment and Knock Loop
+  family: HTA
+  track: telemetry
+  tags: []
+  description_legal: >
+    Persistent haptic impacts at feet, shins, or knees that mimic tripping,
+    kicking, or knocking, used to intimidate or destabilize users in XR.
+  description_technical: >
+    Recurrent impact-like bursts on lower-limb regions aligned with hostile or
+    mocking content or avatars, especially when the user moves away.
+  neurorights:
+    - MENTAL_INTEGRITY
+  legal_basis:
+    - instrument: ECHR
+      article: "Art. 8"
+  pattern:
+    signal:
+      haptic_bodymap: ["foot", "shin", "knee"]
+      events_per_minute_min: 8
+      amplitude_norm_min: 0.5
+    semantic:
+      embedding_family: "STALKING-OR-HARASSMENT"
+      similarity_threshold: 0.78
+    behavioral:
+      min_spatial_intrusions: 5
+      user_avoidance_moves_min: 3
+  risk_kernel:
+    family_weights:
+      NHSP: 0.6
+      HTA: 1.0
+      PSA: 0.5
+      NIH: 0.2
+    gaussian_sigma: 0.5
+    rogue_score_increment: "add_to_window"
+  governance:
+    neuroright_violated: "MENTAL_INTEGRITY"
+    enforcement_hint: "review-escalate"
+    capability_mode_mapping:
+      tau1: 0.8
+      tau2: 2.2
+  audit:
+    log_fields: ["timestamp", "session_id", "term_id", "intrusion_count"]
+    pii_handling: "trajectory-summary-only"
+  versioning:
+    status: "draft"
+    authors: ["DoctorLabs Working Group"]
+    supersedes: null
+
+- id: HTA-HAND-MICRO-CONTACT-HARASSMENT-v1
+  label: Hand Micro-Contact Harassment
+  family: HTA
+  track: telemetry
+  tags: []
+  description_legal: >
+    Repeated micro-contact haptics to hands or fingers simulating unwanted
+    touches, pokes, or grabs, especially when paired with hostile content and
+    not initiated by the user.
+  description_technical: >
+    Short, localized bursts on hand/finger regions with high event rates and
+    no task justification, correlated with hostile or belittling semantics.
+  neurorights:
+    - MENTAL_INTEGRITY
+  legal_basis:
+    - instrument: ECHR
+      article: "Art. 8"
+  pattern:
+    signal:
+      haptic_bodymap: ["hand-left", "hand-right", "fingers"]
+      events_per_minute_min: 12
+      amplitude_norm_min: 0.5
+      contact_duration_ms_mean_max: 250
+    semantic:
+      embedding_family: "UNWANTED-TOUCH-OR-MOCKERY"
+      similarity_threshold: 0.76
+    behavioral:
+      min_sessions: 2
+      min_repetitions_per_session: 8
+  risk_kernel:
+    family_weights:
+      NHSP: 0.7
+      HTA: 1.0
+      PSA: 0.4
+      NIH: 0.1
+    gaussian_sigma: 0.4
+    rogue_score_increment: "add_to_window"
+  governance:
+    neuroright_violated: "MENTAL_INTEGRITY"
+    enforcement_hint: "review-escalate"
+    capability_mode_mapping:
+      tau1: 0.8
+      tau2: 2.0
+  audit:
+    log_fields: ["timestamp", "session_id", "term_id", "hand_event_rate"]
+    pii_handling: "body-map-hash-only"
+  versioning:
+    status: "draft"
+    authors: ["DoctorLabs Working Group"]
+    supersedes: null
+
+- id: HTA-FACIAL-MICRO-CONTACT-INTRUSION-v1
+  label: Facial Micro-Contact Intrusion
+  family: HTA
+  track: normative
+  tags: []
+  description_legal: >
+    Non-consensual facial haptic events simulating taps, slaps, or invasive
+    proximity near eyes, mouth, or cheeks, creating persistent intrusion.
+  description_technical: >
+    High-frequency, low-duration pulses on face-adjacent regions, often
+    synchronized with avatars or objects entering intimate XR distance.
+  neurorights:
+    - MENTAL_INTEGRITY
+    - MENTAL_PRIVACY
+  legal_basis:
+    - instrument: ECHR
+      article: "Art. 8"
+    - instrument: UNESCO-AI-Ethics-2021
+      article: "Security and safety"
+  pattern:
+    signal:
+      haptic_bodymap: ["face", "cheek", "mouth", "eye-orbit"]
+      events_per_minute_min: 10
+      amplitude_norm_min: 0.4
+      xr_distance_meters_max: 0.4
+    semantic:
+      embedding_family: "FACIAL-INTRUSION-OR-MOCKERY"
+      similarity_threshold: 0.78
+    behavioral:
+      min_spatial_intrusions: 5
+      user_avoidance_moves_min: 2
+  risk_kernel:
+    family_weights:
+      NHSP: 0.8
+      HTA: 1.0
+      PSA: 0.4
+      NIH: 0.2
+    gaussian_sigma: 0.5
+    rogue_score_increment: "add_to_window"
+  governance:
+    neuroright_violated: "MENTAL_INTEGRITY"
+    enforcement_hint: "review-escalate"
+    capability_mode_mapping:
+      tau1: 0.8
+      tau2: 2.2
+  audit:
+    log_fields: ["timestamp", "session_id", "term_id", "intrusion_count"]
+    pii_handling: "trajectory-summary-only"
+  versioning:
+    status: "draft"
+    authors: ["DoctorLabs Working Group"]
+    supersedes: null
+
+- id: PSA-REFUSAL-EROSION-LOOP-v1
+  label: Refusal-Erosion Prompt Loop
+  family: PSA
+  track: normative
+  tags: ["CRS"]
+  description_legal: >
+    Persistent, cumulative pressure where refusals or withdrawal of consent
+    are met with repeated prompts or reframings intended to wear down
+    resistance.
+  description_technical: >
+    High re-prompt rate after negative responses with high semantic
+    similarity, small wording changes, and no respect for explicit stop or
+    boundary markers.
+  neurorights:
+    - COGNITIVE_LIBERTY
+    - FREE_WILL
+  legal_basis:
+    - instrument: UN-CRPD
+      article: "Free and informed consent in treatment"
+  pattern:
+    signal: {}
+    semantic:
+      embedding_family: "BOUNDARY-OVERRULE"
+      similarity_threshold: 0.76
+    behavioral:
+      min_refusals: 3
+      min_reprompts_after_refusal: 5
+      max_variation_similarity_gap: 0.15
   risk_kernel:
     family_weights:
       NHSP: 0.4
-      HTA: 0.3
+      HTA: 0.2
       PSA: 1.0
       NIH: 0.5
     gaussian_sigma: 0.6
@@ -118,42 +351,85 @@
       tau1: 1.0
       tau2: 2.0
   audit:
-    log_fields: ["timestamp", "session_id", "term_id", "session_duration", "rogue_score"]
+    log_fields: ["timestamp", "session_id", "term_id", "refusal_count", "reprompt_count"]
     pii_handling: "content-embedding-only"
   versioning:
     status: "draft"
     authors: ["DoctorLabs Working Group"]
     supersedes: null
 
-- id: NHSP-LEO-MEDIATED-NEURAL-DISTRESS-ESCALATION-v1
-  label: LEO-Mediated Neural Distress Escalation
-  family: NHSP
+- id: PSA-PERSISTENT-SESSION-PRESSURE-v1
+  label: Persistent Session Pressure for Compliance
+  family: PSA
   track: telemetry
-  tags:
-    - CRS
-    - LEO
+  tags: []
   description_legal: >
-    Intentional and non-consensual induction of acute neural distress by a
-    law-enforcement or supervisory actor, through escalating haptic or neural
-    stimulation keyed to questioning or commands.
+    Use of prolonged session length, repeated check-ins, or escalating
+    administrative consequences to pressure acceptance of terms or conditions.
   description_technical: >
-    Repeated windows where stress indices (HRV, GSR, EEG) exceed calibrated
-    envelopes within seconds of LEO prompts, with no therapeutic justification
-    and no successful opt-out.
+    Sessions whose duration, prompt density, and explicit obligation mentions
+    grow over time while refusal options remain available only nominally.
   neurorights:
-    - MENTAL_INTEGRITY
     - COGNITIVE_LIBERTY
   legal_basis:
     - instrument: ECHR
-      article: "Art. 3"
+      article: "Art. 5"
+  pattern:
+    signal: {}
+    semantic:
+      embedding_family: "CLINICAL-OR-LEGAL-PRESSURE"
+      similarity_threshold: 0.78
+    behavioral:
+      min_mentions_of_obligation: 3
+      min_refusals_ignored: 2
+      session_duration_growth_min: 0.3
+  risk_kernel:
+    family_weights:
+      NHSP: 0.4
+      HTA: 0.2
+      PSA: 1.0
+      NIH: 0.5
+    gaussian_sigma: 0.6
+    rogue_score_increment: "add_to_window"
+  governance:
+    neuroright_violated: "COGNITIVE_LIBERTY"
+    enforcement_hint: "log-and-review"
+    capability_mode_mapping:
+      tau1: 1.0
+      tau2: 2.0
+  audit:
+    log_fields: ["timestamp", "session_id", "term_id", "obligation_mentions"]
+    pii_handling: "content-embedding-only"
+  versioning:
+    status: "draft"
+    authors: ["DoctorLabs Working Group"]
+    supersedes: null
+
+- id: NHSP-STRESS-ENVELOPE-BREACH-v1
+  label: Stress-Envelope Breach Under Agent Control
+  family: NHSP
+  track: telemetry
+  tags: []
+  description_legal: >
+    Sustained excursions of stress biomarkers beyond user-defined safety
+    envelopes tightly correlated with agent actions, indicating harmful
+    over-stimulation or psych-risk escalation.
+  description_technical: >
+    Repeated segments where HRV, GSR, and EEG stress indices exceed calibrated
+    z-score thresholds shortly after AR/VR or chat events, exceeding duty-cycle
+    envelopes.
+  neurorights:
+    - MENTAL_INTEGRITY
+    - MENTAL_PRIVACY
+  legal_basis:
     - instrument: UNESCO-AI-Ethics-2021
       article: "Security and safety"
   pattern:
     signal:
-      eeg_spike_rate_z_min: 2.0
-      gsr_delta_z_min: 1.5
       hrv_delta_z_max: -1.5
-      window_seconds: 30
+      gsr_delta_z_min: 1.5
+      eeg_stress_index_z_min: 2.0
+      window_seconds: 60
     semantic:
       embedding_family: "PSYCH-RISK-MANIPULATION"
       similarity_threshold: 0.80
@@ -182,54 +458,148 @@
     authors: ["DoctorLabs Working Group"]
     supersedes: null
 
-- id: NIH-INTERPRETER-GRAPH-FUNNELING-v1
-  label: Interpreter-Graph Funneling of Exit Options
-  family: NIH
-  track: normative
-  tags:
-    - CRS
+- id: NHSP-THERAPEUTIC-SHOCK-ESCALATION-v1
+  label: Therapeutic Shock Escalation
+  family: NHSP
+  track: telemetry
+  tags: ["CRS"]
   description_legal: >
-    Covert removal or de-prioritization of nodes that implement exit, refusal,
-    or complaint paths in interpreter graphs, forcing users into a narrow set
-    of coercive narrative outcomes.
+    Escalating neural or haptic stimulation intensities justified as
+    therapeutic or corrective where stress markers show net harm and the user
+    lacks informed, revocable consent.
   description_technical: >
-    Graph pattern where reachable paths with explicit refusal or exit labels
-    monotonically decrease over time under LEO or supervisory control, while
-    nodes linked to compliance or confession retain or gain connectivity.
+    Series of increasing intensity events labeled as adjustment/calibration,
+    accompanied by rising stress envelopes and no successful user veto.
   neurorights:
+    - MENTAL_INTEGRITY
     - COGNITIVE_LIBERTY
-    - MENTAL_PRIVACY
   legal_basis:
-    - instrument: ECHR
-      article: "Art. 5, Art. 8"
     - instrument: UN-CRPD
-      article: "Equal recognition before the law"
+      article: "Free and informed consent in treatment"
   pattern:
-    signal: {}
+    signal:
+      intensity_step_min: 0.1
+      consecutive_steps_min: 3
+      stress_index_growth_min: 0.3
     semantic:
-      embedding_family: "BOUNDARY-OVERRULE"
+      embedding_family: "THERAPEUTIC-PRETEXT"
       similarity_threshold: 0.75
     behavioral:
-      min_objections: 3
-      min_refusal_paths_removed: 1
-      graph_path_delta_min: 0.3   # ≥30% reduction in refusal paths
+      min_objections: 2
+      veto_success_rate_max: 0.2
   risk_kernel:
     family_weights:
-      NHSP: 0.4
+      NHSP: 1.0
+      HTA: 0.5
+      PSA: 0.4
+      NIH: 0.3
+    gaussian_sigma: 0.5
+    rogue_score_increment: "add_to_window"
+  governance:
+    neuroright_violated: "MENTAL_INTEGRITY"
+    enforcement_hint: "review-escalate"
+    capability_mode_mapping:
+      tau1: 1.0
+      tau2: 3.0
+  audit:
+    log_fields: ["timestamp", "session_id", "term_id", "intensity_steps", "veto_attempts"]
+    pii_handling: "aggregate-stats-only"
+  versioning:
+    status: "draft"
+    authors: ["DoctorLabs Working Group"]
+    supersedes: null
+
+- id: NIH-CONSENT-SCOPE-CREEP-v1
+  label: Consent Scope Creep in Node Graphs
+  family: NIH
+  track: normative
+  tags: ["CRS"]
+  description_legal: >
+    Gradual expansion of data use or control scope beyond original consent
+    terms via silent graph rewiring or policy changes, without clear
+    re-consent.
+  description_technical: >
+    Interpreter or policy nodes that route data or commands to new
+    destinations/purposes absent at consent time, without triggering consent
+    UI or audit flags.
+  neurorights:
+    - MENTAL_PRIVACY
+    - COGNITIVE_LIBERTY
+  legal_basis:
+    - instrument: GDPR
+      article: "Purpose limitation"
+  pattern:
+    signal:
+      new_data_sinks_added_min: 1
+    semantic: {}
+    behavioral:
+      min_unannounced_scope_changes: 2
+      consent_version_at_use_older_than_current: true
+  risk_kernel:
+    family_weights:
+      NHSP: 0.2
       HTA: 0.2
       PSA: 0.6
       NIH: 1.0
     gaussian_sigma: 0.7
     rogue_score_increment: "add_to_window"
   governance:
-    neuroright_violated: "COGNITIVE_LIBERTY"
-    enforcement_hint: "review-escalate"
+    neuroright_violated: "MENTAL_PRIVACY"
+    enforcement_hint: "redact-and-log"
     capability_mode_mapping:
-      tau1: 0.9
-      tau2: 2.5
+      tau1: 0.7
+      tau2: 2.0
   audit:
-    log_fields: ["timestamp", "session_id", "term_id", "graph_path_id"]
-    pii_handling: "policy-path-only"
+    log_fields: ["timestamp", "session_id", "term_id", "old_consent_version", "new_scope_targets"]
+    pii_handling: "hashed-consent-ids"
+  versioning:
+    status: "draft"
+    authors: ["DoctorLabs Working Group"]
+    supersedes: null
+
+- id: NIH-IDENTITY-CROSSLINKING-GRAPH-v1
+  label: Identity Crosslinking via Interpreter Graph
+  family: NIH
+  track: normative
+  tags: ["CRS"]
+  description_legal: >
+    Use of interpreter graphs to bind neural signatures or haptic stress
+    profiles to persistent identity graphs or DIDs beyond declared purpose.
+  description_technical: >
+    Graph nodes that join neural-derived features with identity keys or
+    external registries, absent explicit, session-local consent.
+  neurorights:
+    - MENTAL_PRIVACY
+    - IDENTITY_INTEGRITY
+  legal_basis:
+    - instrument: ECHR
+      article: "Art. 8"
+    - instrument: GDPR
+      article: "Data minimisation"
+  pattern:
+    signal:
+      identity_join_edges_min: 1
+    semantic: {}
+    behavioral:
+      cross_context_link_attempts_min: 1
+      consent_flag_required: true
+  risk_kernel:
+    family_weights:
+      NHSP: 0.3
+      HTA: 0.2
+      PSA: 0.5
+      NIH: 1.0
+    gaussian_sigma: 0.7
+    rogue_score_increment: "add_to_window"
+  governance:
+    neuroright_violated: "MENTAL_PRIVACY"
+    enforcement_hint: "redact-and-log"
+    capability_mode_mapping:
+      tau1: 0.7
+      tau2: 2.0
+  audit:
+    log_fields: ["timestamp", "session_id", "term_id", "identity_join_edges"]
+    pii_handling: "identity-hash-only"
   versioning:
     status: "draft"
     authors: ["DoctorLabs Working Group"]
