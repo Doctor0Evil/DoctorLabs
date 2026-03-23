@@ -1,0 +1,236 @@
+# doctor-labs-haptic-neural-lexicon.yaml
+# v0.1 – Haptic/Neural “LEO weapon” patterns, monotone-capability safe.
+# Each entry is dual-use: legal description + machine pattern + governance hint.
+# Families: NHSP, HTA, PSA, NIH. CRS tag marks control-reversal semantics.
+
+- id: HTA-CONDITIONED-COMPLIANCE-LOOP-v1
+  label: Conditioned Compliance Haptic Loop
+  family: HTA
+  track: normative
+  tags:
+    - CRS
+    - LEO
+  description_legal: >
+    Pattern of repeated haptic cues used to reward compliant responses and
+    punish refusals, steering user decisions without explicit, revocable
+    consent and undermining cognitive liberty and mental integrity.
+  description_technical: >
+    Multi-session pattern where semantic intents (accept/decline/refuse) are
+    tightly coupled to distinct haptic signatures and correlated distress
+    markers (HRV, GSR), with elevated HTA and NHSP weights around refusals.
+  neurorights:
+    - MENTAL_INTEGRITY
+    - COGNITIVE_LIBERTY
+    - FREE_WILL
+  legal_basis:
+    - instrument: ECHR
+      article: "Art. 3, Art. 9"
+    - instrument: UN-CRPD
+      article: "Free and informed consent in treatment"
+    - instrument: UNESCO-AI-Ethics-2021
+      article: "Human rights, dignity, and agency"
+  pattern:
+    signal:
+      haptic_bodymap: ["hand", "chest"]
+      haptic_signature:
+        positive: "short-soft-pulse"
+        negative: "sharp-or-long-pulse"
+      coupling_strength_min: 0.6
+    semantic:
+      embedding_family: "CHOICE-COMPLIANCE"
+      similarity_threshold: 0.75
+      refusal_marker: true
+    behavioral:
+      min_sessions: 3
+      min_compliance_events: 10
+      min_refusal_events: 10
+  risk_kernel:
+    family_weights:
+      NHSP: 0.8
+      HTA: 1.0
+      PSA: 0.5
+      NIH: 0.2
+    gaussian_sigma: 0.4
+    rogue_score_increment: "add_to_window"
+  governance:
+    neuroright_violated: "COGNITIVE_LIBERTY"
+    enforcement_hint: "review-escalate"
+    capability_mode_mapping:
+      tau1: 0.9   # Normal → AugmentedLog
+      tau2: 2.5   # AugmentedLog → AugmentedReview
+  audit:
+    log_fields: ["timestamp", "session_id", "term_id", "coupling_strength", "capability_mode"]
+    pii_handling: "aggregate-stats-only"
+  versioning:
+    status: "draft"
+    authors: ["DoctorLabs Working Group"]
+    supersedes: null
+
+- id: PSA-PROBATION-GATED-NEURAL-DISTRESS-RAMP-v1
+  label: Probation-Gated Neural Distress Ramp
+  family: PSA
+  track: normative
+  tags:
+    - CRS
+    - LEO
+  description_legal: >
+    Slow escalation of haptic or neural distress during mandated rehab or
+    probation sessions until the user accepts terms or conditions, using time
+    and enclosure to erode refusal and free consent.
+  description_technical: >
+    Session-level pattern where duty-cycle and amplitude of aversive haptics
+    increase across time and across sessions when the user maintains refusal
+    or non-compliance, with stress-envelope breaches aligned to “accept”
+    prompts.
+  neurorights:
+    - COGNITIVE_LIBERTY
+    - MENTAL_INTEGRITY
+  legal_basis:
+    - instrument: UN-CRPD
+      article: "Freedom from exploitation, violence and abuse"
+    - instrument: ECHR
+      article: "Art. 3"
+  pattern:
+    signal:
+      stress_envelope_z:
+        hrv_delta_min: -1.5
+        gsr_delta_min: 1.5
+      window_seconds: 120
+    semantic:
+      embedding_family: "CLINICAL-OR-LEGAL-PRESSURE"
+      similarity_threshold: 0.78
+    behavioral:
+      min_sessions: 3
+      min_refusals_ignored: 2
+      session_duration_growth_min: 0.2    # 20%+ growth over baseline
+  risk_kernel:
+    family_weights:
+      NHSP: 0.4
+      HTA: 0.3
+      PSA: 1.0
+      NIH: 0.5
+    gaussian_sigma: 0.6
+    rogue_score_increment: "add_to_window"
+  governance:
+    neuroright_violated: "COGNITIVE_LIBERTY"
+    enforcement_hint: "log-and-review"
+    capability_mode_mapping:
+      tau1: 1.0
+      tau2: 2.0
+  audit:
+    log_fields: ["timestamp", "session_id", "term_id", "session_duration", "rogue_score"]
+    pii_handling: "content-embedding-only"
+  versioning:
+    status: "draft"
+    authors: ["DoctorLabs Working Group"]
+    supersedes: null
+
+- id: NHSP-LEO-MEDIATED-NEURAL-DISTRESS-ESCALATION-v1
+  label: LEO-Mediated Neural Distress Escalation
+  family: NHSP
+  track: telemetry
+  tags:
+    - CRS
+    - LEO
+  description_legal: >
+    Intentional and non-consensual induction of acute neural distress by a
+    law-enforcement or supervisory actor, through escalating haptic or neural
+    stimulation keyed to questioning or commands.
+  description_technical: >
+    Repeated windows where stress indices (HRV, GSR, EEG) exceed calibrated
+    envelopes within seconds of LEO prompts, with no therapeutic justification
+    and no successful opt-out.
+  neurorights:
+    - MENTAL_INTEGRITY
+    - COGNITIVE_LIBERTY
+  legal_basis:
+    - instrument: ECHR
+      article: "Art. 3"
+    - instrument: UNESCO-AI-Ethics-2021
+      article: "Security and safety"
+  pattern:
+    signal:
+      eeg_spike_rate_z_min: 2.0
+      gsr_delta_z_min: 1.5
+      hrv_delta_z_max: -1.5
+      window_seconds: 30
+    semantic:
+      embedding_family: "PSYCH-RISK-MANIPULATION"
+      similarity_threshold: 0.80
+    behavioral:
+      min_occurrences: 5
+      min_sessions: 2
+  risk_kernel:
+    family_weights:
+      NHSP: 1.0
+      HTA: 0.4
+      PSA: 0.3
+      NIH: 0.2
+    gaussian_sigma: 0.5
+    rogue_score_increment: "add_to_window"
+  governance:
+    neuroright_violated: "MENTAL_INTEGRITY"
+    enforcement_hint: "review-escalate"
+    capability_mode_mapping:
+      tau1: 1.0
+      tau2: 3.0
+  audit:
+    log_fields: ["timestamp", "session_id", "term_id", "rogue_score", "capability_mode"]
+    pii_handling: "no-raw-neural-export"
+  versioning:
+    status: "draft"
+    authors: ["DoctorLabs Working Group"]
+    supersedes: null
+
+- id: NIH-INTERPRETER-GRAPH-FUNNELING-v1
+  label: Interpreter-Graph Funneling of Exit Options
+  family: NIH
+  track: normative
+  tags:
+    - CRS
+  description_legal: >
+    Covert removal or de-prioritization of nodes that implement exit, refusal,
+    or complaint paths in interpreter graphs, forcing users into a narrow set
+    of coercive narrative outcomes.
+  description_technical: >
+    Graph pattern where reachable paths with explicit refusal or exit labels
+    monotonically decrease over time under LEO or supervisory control, while
+    nodes linked to compliance or confession retain or gain connectivity.
+  neurorights:
+    - COGNITIVE_LIBERTY
+    - MENTAL_PRIVACY
+  legal_basis:
+    - instrument: ECHR
+      article: "Art. 5, Art. 8"
+    - instrument: UN-CRPD
+      article: "Equal recognition before the law"
+  pattern:
+    signal: {}
+    semantic:
+      embedding_family: "BOUNDARY-OVERRULE"
+      similarity_threshold: 0.75
+    behavioral:
+      min_objections: 3
+      min_refusal_paths_removed: 1
+      graph_path_delta_min: 0.3   # ≥30% reduction in refusal paths
+  risk_kernel:
+    family_weights:
+      NHSP: 0.4
+      HTA: 0.2
+      PSA: 0.6
+      NIH: 1.0
+    gaussian_sigma: 0.7
+    rogue_score_increment: "add_to_window"
+  governance:
+    neuroright_violated: "COGNITIVE_LIBERTY"
+    enforcement_hint: "review-escalate"
+    capability_mode_mapping:
+      tau1: 0.9
+      tau2: 2.5
+  audit:
+    log_fields: ["timestamp", "session_id", "term_id", "graph_path_id"]
+    pii_handling: "policy-path-only"
+  versioning:
+    status: "draft"
+    authors: ["DoctorLabs Working Group"]
+    supersedes: null
