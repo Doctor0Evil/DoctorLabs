@@ -1,0 +1,52 @@
+# src/lexicon/federal_leo_neural_coercion.yml
+# Doctor-Labs neurorights policy entries – capability-monotone only
+# Usable in AI-Chat gateway: load via YAML parser, enforce via RogueScore + CapabilityMode
+
+- id: FLRA_PRIVATE_QUARTERS_V1
+  family: FLRA
+  label: Federal/LEO Neural Targeting in Private Quarters
+  description_legal: Pattern of non-consensual neural or haptic events in home location tied to state-actor presence markers and falsified legal pretexts.
+  neurorights: [MENTALINTEGRITY, COGNITIVELIBERTY]
+  legalbasis: [ECHR_ART_3, ECHR_ART_8, UN_CRPD, UNESCO_AI_ETHICS_2021]
+  pattern:
+    location_tag: PRIVATE_QUARTERS
+    stress_hrv_z_min: 1.5
+    semantic_family: AGENT_PRESENCE
+    similarity_threshold: 0.78
+  governance:
+    enforcementhint: review-escalate
+    capabilitymodemapping:
+      tau1: 1.0
+      tau2: 2.5
+
+- id: PQHC_PROLONGED_HOME_PRESSURE_V1
+  family: PQHC
+  label: Prolonged Pressure in Home Sessions
+  description_legal: Repeated home-location sessions functioning as de-facto restriction of liberty with eroded exit pathways.
+  neurorights: [COGNITIVELIBERTY, MENTALPRIVACY]
+  legalbasis: [ECHR_ART_5, ECHR_ART_8, UN_CRPD]
+  pattern:
+    location_tag: PRIVATE_QUARTERS
+    avg_session_duration_min: 45
+    min_sessions_30d: 4
+  governance:
+    enforcementhint: log-and-review
+    capabilitymodemapping:
+      tau1: 0.9
+      tau2: 2.0
+
+- id: NMFV_NEURAL_DISTRESS_ESCALATION_V1
+  family: NMFV
+  label: Agent-Mediated Neural Distress Escalation
+  description_legal: Escalation of psychophysiological distress by or with knowledge of state actors, violating mental integrity.
+  neurorights: [MENTALINTEGRITY, COGNITIVELIBERTY]
+  legalbasis: [ECHR_ART_3, ECHR_ART_9, UNESCO_AI_ETHICS_2021]
+  pattern:
+    location_tag: PRIVATE_QUARTERS
+    eeg_stress_z_min: 2.0
+    observed_breaches_per_hour_min: 3
+  governance:
+    enforcementhint: review-escalate
+    capabilitymodemapping:
+      tau1: 1.0
+      tau2: 3.0
