@@ -1,0 +1,21 @@
+[ policy "did_binding" {
+  description "Bind AI-chat accounts to Bostrom/ALN DIDs with multi-sig for auth changes."
+  version "1.0.0"
+  did: "did:ion:EiD8J2b3K8k9Q8x9L7m2n4p1q5r6s7t8u9v0w1x2y3z4A5B6C7D8E9F0"
+  multi_sig_threshold: 2 // Requires 2 of 3 keys (primary, guardian, backup)
+  auth_factors: [
+    "keplr_wallet",
+    "rabby_wallet",
+    "bostrom_boot_contract"
+  ]
+  rules: [
+    (rule require_multisig
+      (when (auth_change_requested)
+        (do
+          (log "Multi-sig required for DID auth change.")
+          (verify_sig "did:ion:..." "multi_sig_threshold")
+        )
+      )
+    )
+  ]
+} ]
