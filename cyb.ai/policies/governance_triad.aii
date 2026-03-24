@@ -1,0 +1,22 @@
+[ policy "governance_triad" {
+  description "Normal → AugmentedLog → AugmentedReview triad for high-risk operations."
+  version "1.0.0"
+  modes: ["Normal", "AugmentedLog", "AugmentedReview"]
+  risk_threshold: 0.8 // Q_max metadata
+  operations: [
+    "api_key_creation",
+    "device_link",
+    "log_export",
+    "embedding_access"
+  ]
+  rules: [
+    (rule escalate_to_review
+      (when (risk_score > risk_threshold)
+        (do
+          (log "Escalate to AugmentedReview mode.")
+          (require_review "original_action")
+        )
+      )
+    )
+  ]
+} ]
