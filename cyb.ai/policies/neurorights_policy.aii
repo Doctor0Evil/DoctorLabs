@@ -1,0 +1,20 @@
+[ policy "neurorights" {
+  description "Annotate capabilities with neurorights and enforce consent transitions."
+  version "1.0.0"
+  rights: [
+    "mental_integrity",
+    "mental_privacy",
+    "cognitive_liberty",
+    "personal_identity"
+  ]
+  rules: [
+    (rule require_neurorights_consent
+      (when (right_violation_attempted)
+        (do
+          (log "Neurorights violation detected: {right}.")
+          (require_consent "time_limited_revocable")
+        )
+      )
+    )
+  ]
+} ]
