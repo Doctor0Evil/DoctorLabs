@@ -1,0 +1,100 @@
+[ policy "monotone_capability_lattice" {
+  description "Formal capability lattice + governance modes with monotone invariant (no user capability reduction)."
+  version "1.1.0"
+
+  // --- Capability universe C = U ∪ G -------------------------------------
+  user_capabilities: [
+    { id: "uc.chat_basic",         neurorights: ["cognitive_liberty"] },
+    { id: "uc.chat_history_read",  neurorights: ["mental_privacy", "personal_identity"] },
+    { id: "uc.device_status_read", neurorights: ["mental_integrity"] },
+    { id: "uc.xr_overlay_view",    neurorights: ["mental_integrity", "cognitive_liberty"] }
+  ]
+
+  governance_capabilities: [
+    { id: "gc.logging_basic" },
+    { id: "gc.logging_augmented" },
+    { id: "gc.review_multisig" },
+    { id: "gc.attestation_strong" }
+  ]
+
+  // --- Lattice states s ⊆ C ----------------------------------------------
+  states: [
+    {
+      id: "state.normal",
+      user_caps: ["uc.chat_basic", "uc.chat_history_read", "uc.device_status_read", "uc.xr_overlay_view"],
+      gov_caps:  ["gc.logging_basic"]
+    },
+    {
+      id: "state.aug_log",
+      user_caps: ["uc.chat_basic", "uc.chat_history_read", "uc.device_status_read", "uc.xr_overlay_view"],
+      gov_caps:  ["gc.logging_basic", "gc.logging_augmented"]
+    },
+    {
+      id: "state.aug_review",
+      user_caps: ["uc.chat_basic", "uc.chat_history_read", "uc.device_status_read", "uc.xr_overlay_view"],
+      gov_caps:  ["gc.logging_basic", "gc.logging_augmented", "gc.review_multisig", "gc.attestation_strong"]
+    }
+  ]
+
+  // Partial order: s1 <= s2 iff U1 ⊆ U2 and G1 ⊆ G2 (implicit from lists)
+
+  // --- Monotonicity invariant --------------------------------------------
+  invariant monotone_capabilities {
+    description "For all transitions s -> s', user_caps(s) ⊆ user_caps(s'). No automated downgrade."
+    check: forall (transition t) {
+      subseteq(t.from.user_caps, t.to.user_caps) == true
+    }
+  }
+
+  // --- Allowed transitions (only joins that add G) ------------------------
+  transitions: [
+    {
+      id: "t.normal_to_aug_log",
+      from: "state.normal",
+      to:   "state.aug_log",
+      guard: "risk_score >= 0.3 && risk_score < 0.8"
+    },
+    {
+      id: "t.aug_log_to_aug_review",
+      from: "state.aug_log",
+      to:   "state.aug_review",
+      guard: "risk_score >= 0.8"
+    },
+    {
+      id: "t.normal_stay",
+      from: "state.normal",
+      to:   "state.normal",
+      guard: "risk_score < 0.3"
+    },
+    {
+      id: "t.aug_log_stay",
+      from: "state.aug_log",
+      to:   "state.aug_log",
+      guard: "risk_score < 0.8"
+    },
+    {
+      id: "t.aug_review_stay",
+      from: "state.aug_review",
+      to:   "state.aug_review",
+      guard: "true"
+    }
+  ]
+
+  // --- Compile-time safety: forbid meet/downgrade transitions ------------
+  rules: [
+    (rule reject_non_monotone_transition
+      (when (transition_declared)
+        (do
+          (unless (invariant_holds "monotone_capabilities")
+            (reject "Non-monotone transition: would reduce user capabilities.")
+          )
+        )
+      )
+    )
+  ]
+
+  audit: {
+    enabled: true
+    log_location: "/var/log/cyb_ai/monotone_capability_lattice.log"
+  }
+} ]
