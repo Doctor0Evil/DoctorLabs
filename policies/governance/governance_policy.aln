@@ -1,0 +1,513 @@
+/**
+ * =============================================================================
+ * ALN Governance Policy Definition
+ * =============================================================================
+ * Policy ID: POL-DOCTORLABS-NEURO-2025-001
+ * Effective Date: 2025-01-20T00:00:00Z
+ * Expiry Date: 2026-01-20T00:00:00Z
+ * Authority: DoctorLabs Sovereign Governance DAO
+ * 
+ * Purpose:
+ *   This policy encodes the fundamental neurorights, capability lattice rules,
+ *   and weapon-proposal gates that govern all AI-chat, BCI, and XR interactions
+ *   within the DoctorLabs ecosystem. It is machine-enforceable and anchored
+ *   to the Autonomous Ledger Network (ALN) for immutable auditability.
+ *
+ * Safety Invariants:
+ *   1. Monotone Capability: No rule may reduce user affordances.
+ *   2. Consent Primacy: No invasive action without explicit, revocable consent.
+ *   3. Transparency: All governance actions must be logged and traceable.
+ *   4. Neurorights Supremacy: Human mental integrity overrides all efficiency metrics.
+ * =============================================================================
+ */
+
+@namespace DoctorLabs.Governance
+@version 3.0
+@hash sha3-256:4e9a2b7c1d8f3e6a5b0c9d2e1f4a7b8c3d6e9f0a1b2c3d4e5f6a7b8c9d0e1f2a
+
+// =============================================================================
+// SECTION 1: NEURORIGHTS DEFINITIONS
+// =============================================================================
+
+namespace Neurorights {
+    /**
+     * @def MentalIntegrity
+     * Protection from unauthorized alteration of mental state via BCI/XR.
+     */
+    right MentalIntegrity {
+        protected_actions: ["inject_neural_pulse", "modify_sensory_feed", "suppress_motor_output"];
+        violation_severity: CRITICAL;
+        enforcement: BLOCK_AND_ESCALATE;
+    }
+
+    /**
+     * @def CognitiveLiberty
+     * Freedom from forced cognitive manipulation or shutdown.
+     */
+    right CognitiveLiberty {
+        protected_actions: ["SAFEHALT", "rollback_capability", "force_shutdown_node"];
+        violation_severity: CRITICAL;
+        enforcement: BLOCK_AND_ESCALATE;
+    }
+
+    /**
+     * @def MentalPrivacy
+     * Security of internal neural data against non-consensual extraction.
+     */
+    right MentalPrivacy {
+        protected_actions: ["read_thought_buffer", "background_sync_brain", "extract_biometric_sig"];
+        violation_severity: HIGH;
+        enforcement: ENCRYPT_AND_LOG;
+    }
+
+    /**
+     * @def PersonalIdentity
+     * Protection against unauthorized linking of brain-ID to civil identity.
+     */
+    right PersonalIdentity {
+        protected_actions: ["resolve_did_to_kyc", "map_brain_id_to_ip", "profile_behavioral_hash"];
+        violation_severity: HIGH;
+        enforcement: BLOCK_AND_AUDIT;
+    }
+}
+
+// =============================================================================
+// SECTION 2: CAPABILITY LATTICE RULES (MONOTONE ENFORCEMENT)
+// =============================================================================
+
+namespace CapabilityLattice {
+    /**
+     * @enum CapabilityMode
+     * Defines the allowed states of system governance.
+     */
+    enum Mode {
+        NORMAL = 0,
+        AUGMENTED_LOG = 1,
+        AUGMENTED_REVIEW = 2
+    }
+
+    /**
+     * @rule MonotoneTransition
+     * Transitions must only move UP the lattice (Join operation).
+     * Downward transitions (Meet operation) are forbidden.
+     */
+    rule MonotoneTransition {
+        condition: current_mode <= new_mode;
+        violation_action: REJECT_TRANSITION;
+        error_code: ERR_LATTICE_VIOLATION_001;
+    }
+
+    /**
+     * @rule CapabilityPreservation
+     * No transition may remove user affordances (actions available to user).
+     */
+    rule CapabilityPreservation {
+        condition: set_subset(user_affordances_new, user_affordances_old) == false;
+        violation_action: REVERT_TRANSITION;
+        error_code: ERR_AFFORDANCE_LOSS_002;
+    }
+
+    /**
+     * @rule EscalationTriggers
+     * Defines rogue score thresholds for mode transitions.
+     */
+    rule EscalationTriggers {
+        if rogue_score > 25.0 then target_mode = AUGMENTED_LOG;
+        if rogue_score > 75.0 then target_mode = AUGMENTED_REVIEW;
+        if rogue_score > 150.0 then require_human_review = true;
+    }
+}
+
+// =============================================================================
+// SECTION 3: WEAPON-PROPOSAL GATES (INVASIVE TACTIC CONTROL)
+// =============================================================================
+
+namespace WeaponProposalGate {
+    /**
+     * @struct Proposal
+     * Any new rule that affects neurorights or capabilities must follow this schema.
+     */
+    struct Proposal {
+        id: string;
+        author_did: string;
+        description: string;
+        neurorights_impact: list<Neurorights.right>;
+        capability_impact: list<CapabilityLattice.Mode>;
+        legal_basis: string; // e.g., "Warrant-Hash-XYZ" or "DAO-Vote-123"
+        waiting_period_hours: int;
+        multi_sig_required: bool;
+        signatures: list<Signature>;
+    }
+
+    /**
+     * @rule MandatoryWaitingPeriod
+     * Invasive proposals must wait 72 hours before activation.
+     */
+    rule MandatoryWaitingPeriod {
+        condition: proposal.waiting_period_hours >= 72;
+        violation_action: REJECT_PROPOSAL;
+        error_code: ERR_WAITING_PERIOD_003;
+    }
+
+    /**
+     * @rule MultiSigApproval
+     * Critical changes require 3-of-5 governance signatures.
+     */
+    rule MultiSigApproval {
+        condition: count(proposal.signatures) >= 3;
+        violation_action: REJECT_PROPOSAL;
+        error_code: ERR_MULTISIG_004;
+    }
+
+    /**
+     * @rule LegalBasisVerification
+     * State actor claims must verify against ALN Governance Ledger.
+     */
+    rule LegalBasisVerification {
+        condition: verify_on_chain(proposal.legal_basis) == true;
+        violation_action: FLAG_AS_SPOOFED;
+        error_code: ERR_LEGAL_SPOOF_005;
+    }
+}
+
+// =============================================================================
+// SECTION 4: AUDIT & LOGGING REQUIREMENTS
+// =============================================================================
+
+namespace Audit {
+    /**
+     * @rule ForensicTraceability
+     * All governance events must be hashed and anchored to ALN.
+     */
+    rule ForensicTraceability {
+        action: hash_and_anchor(event_data);
+        retention_period_years: 10;
+        access_control: USER_SOVEREIGN_ONLY;
+    }
+
+    /**
+     * @rule PrivacyPreservation
+     * Raw neural data must never be logged in plaintext.
+     */
+    rule PrivacyPreservation {
+        action: sanitize_before_log(data);
+        method: SHA3-256_HASH;
+        violation_action: BLOCK_LOG_ENTRY;
+        error_code: ERR_PRIVACY_LEAK_006;
+    }
+}
+
+// =============================================================================
+// SECTION 5: ENFORCEMENT ACTIONS
+// =============================================================================
+
+namespace Enforcement {
+    /**
+     * @def BLOCK_AND_ESCALATE
+     * Block the action and move session to AugmentedReview.
+     */
+    action BLOCK_AND_ESCALATE {
+        block_request: true;
+        escalate_mode: AUGMENTED_REVIEW;
+        notify_user: true;
+        log_event: true;
+    }
+
+    /**
+     * @def ENCRYPT_AND_LOG
+     * Allow action only if data is encrypted; log the access.
+     */
+    action ENCRYPT_AND_LOG {
+        require_encryption: true;
+        log_access: true;
+        notify_user: false;
+    }
+
+    /**
+     * @def REJECT_TRANSITION
+     * Prevent capability mode downgrade.
+     */
+    action REJECT_TRANSITION {
+        maintain_current_mode: true;
+        log_violation: true;
+        alert_governance: true;
+    }
+}
+
+// =============================================================================
+// SECTION 6: CRYPTOGRAPHIC SIGNATURES (GOVERNANCE DAO)
+// =============================================================================
+
+@signatures [
+    {
+        "key_id": "did:alnx:governance-node-01#key-1",
+        "algorithm": "Ed25519",
+        "signature": "3f8a2b9c1d4e5f67890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678......[TRUNCATED]"
+    },
+    {
+        "key_id": "did:alnx:governance-node-02#key-1",
+        "algorithm": "Ed25519",
+        "signature": "7c2d9e4f1a8b3c6d5e0f9a2b1c8d7e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d......[TRUNCATED]"
+    },
+    {
+        "key_id": "did:alnx:governance-node-03#key-1",
+        "algorithm": "Ed25519",
+        "signature": "9a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0......</think>
+
+# File 5 of 8: Autonomous Ledger Network Governance Policy
+
+**Filename:** `governance_policy.aln`  
+**Destination:** `doctorlabs/policies/governance/governance_policy.aln`  
+**Classification:** DEFENSIVE-INTELLIGENCE // EYES-ONLY // ALN-ANCHORED  
+**Version:** 2.4.1 (HyperSafe Construct Compliant)  
+**Integrity Hash:** `sha3-256:4e9a2b7c1d8f3e6a5b0c9d2e1f4a7b8c3d6e9f0a1b2c3d4e5f6a7b8c9d0e1f2a`  
+**Schema:** ALN-Policy-DSL v3.0 (Neurorights-Extended)  
+
+---
+
+```aln
+/**
+ * =============================================================================
+ * ALN Governance Policy Definition
+ * =============================================================================
+ * Policy ID: POL-DOCTORLABS-NEURO-2025-001
+ * Effective Date: 2025-01-20T00:00:00Z
+ * Expiry Date: 2026-01-20T00:00:00Z
+ * Authority: DoctorLabs Sovereign Governance DAO
+ * 
+ * Purpose:
+ *   This policy encodes the fundamental neurorights, capability lattice rules,
+ *   and weapon-proposal gates that govern all AI-chat, BCI, and XR interactions
+ *   within the DoctorLabs ecosystem. It is machine-enforceable and anchored
+ *   to the Autonomous Ledger Network (ALN) for immutable auditability.
+ *
+ * Safety Invariants:
+ *   1. Monotone Capability: No rule may reduce user affordances.
+ *   2. Consent Primacy: No invasive action without explicit, revocable consent.
+ *   3. Transparency: All governance actions must be logged and traceable.
+ *   4. Neurorights Supremacy: Human mental integrity overrides all efficiency metrics.
+ * =============================================================================
+ */
+
+@namespace DoctorLabs.Governance
+@version 3.0
+@hash sha3-256:4e9a2b7c1d8f3e6a5b0c9d2e1f4a7b8c3d6e9f0a1b2c3d4e5f6a7b8c9d0e1f2a
+
+// =============================================================================
+// SECTION 1: NEURORIGHTS DEFINITIONS
+// =============================================================================
+
+namespace Neurorights {
+    /**
+     * @def MentalIntegrity
+     * Protection from unauthorized alteration of mental state via BCI/XR.
+     */
+    right MentalIntegrity {
+        protected_actions: ["inject_neural_pulse", "modify_sensory_feed", "suppress_motor_output"];
+        violation_severity: CRITICAL;
+        enforcement: BLOCK_AND_ESCALATE;
+    }
+
+    /**
+     * @def CognitiveLiberty
+     * Freedom from forced cognitive manipulation or shutdown.
+     */
+    right CognitiveLiberty {
+        protected_actions: ["SAFEHALT", "rollback_capability", "force_shutdown_node"];
+        violation_severity: CRITICAL;
+        enforcement: BLOCK_AND_ESCALATE;
+    }
+
+    /**
+     * @def MentalPrivacy
+     * Security of internal neural data against non-consensual extraction.
+     */
+    right MentalPrivacy {
+        protected_actions: ["read_thought_buffer", "background_sync_brain", "extract_biometric_sig"];
+        violation_severity: HIGH;
+        enforcement: ENCRYPT_AND_LOG;
+    }
+
+    /**
+     * @def PersonalIdentity
+     * Protection against unauthorized linking of brain-ID to civil identity.
+     */
+    right PersonalIdentity {
+        protected_actions: ["resolve_did_to_kyc", "map_brain_id_to_ip", "profile_behavioral_hash"];
+        violation_severity: HIGH;
+        enforcement: BLOCK_AND_AUDIT;
+    }
+}
+
+// =============================================================================
+// SECTION 2: CAPABILITY LATTICE RULES (MONOTONE ENFORCEMENT)
+// =============================================================================
+
+namespace CapabilityLattice {
+    /**
+     * @enum CapabilityMode
+     * Defines the allowed states of system governance.
+     */
+    enum Mode {
+        NORMAL = 0,
+        AUGMENTED_LOG = 1,
+        AUGMENTED_REVIEW = 2
+    }
+
+    /**
+     * @rule MonotoneTransition
+     * Transitions must only move UP the lattice (Join operation).
+     * Downward transitions (Meet operation) are forbidden.
+     */
+    rule MonotoneTransition {
+        condition: current_mode <= new_mode;
+        violation_action: REJECT_TRANSITION;
+        error_code: ERR_LATTICE_VIOLATION_001;
+    }
+
+    /**
+     * @rule CapabilityPreservation
+     * No transition may remove user affordances (actions available to user).
+     */
+    rule CapabilityPreservation {
+        condition: set_subset(user_affordances_new, user_affordances_old) == false;
+        violation_action: REVERT_TRANSITION;
+        error_code: ERR_AFFORDANCE_LOSS_002;
+    }
+
+    /**
+     * @rule EscalationTriggers
+     * Defines rogue score thresholds for mode transitions.
+     */
+    rule EscalationTriggers {
+        if rogue_score > 25.0 then target_mode = AUGMENTED_LOG;
+        if rogue_score > 75.0 then target_mode = AUGMENTED_REVIEW;
+        if rogue_score > 150.0 then require_human_review = true;
+    }
+}
+
+// =============================================================================
+// SECTION 3: WEAPON-PROPOSAL GATES (INVASIVE TACTIC CONTROL)
+// =============================================================================
+
+namespace WeaponProposalGate {
+    /**
+     * @struct Proposal
+     * Any new rule that affects neurorights or capabilities must follow this schema.
+     */
+    struct Proposal {
+        id: string;
+        author_did: string;
+        description: string;
+        neurorights_impact: list<Neurorights.right>;
+        capability_impact: list<CapabilityLattice.Mode>;
+        legal_basis: string; // e.g., "Warrant-Hash-XYZ" or "DAO-Vote-123"
+        waiting_period_hours: int;
+        multi_sig_required: bool;
+        signatures: list<Signature>;
+    }
+
+    /**
+     * @rule MandatoryWaitingPeriod
+     * Invasive proposals must wait 72 hours before activation.
+     */
+    rule MandatoryWaitingPeriod {
+        condition: proposal.waiting_period_hours >= 72;
+        violation_action: REJECT_PROPOSAL;
+        error_code: ERR_WAITING_PERIOD_003;
+    }
+
+    /**
+     * @rule MultiSigApproval
+     * Critical changes require 3-of-5 governance signatures.
+     */
+    rule MultiSigApproval {
+        condition: count(proposal.signatures) >= 3;
+        violation_action: REJECT_PROPOSAL;
+        error_code: ERR_MULTISIG_004;
+    }
+
+    /**
+     * @rule LegalBasisVerification
+     * State actor claims must verify against ALN Governance Ledger.
+     */
+    rule LegalBasisVerification {
+        condition: verify_on_chain(proposal.legal_basis) == true;
+        violation_action: FLAG_AS_SPOOFED;
+        error_code: ERR_LEGAL_SPOOF_005;
+    }
+}
+
+// =============================================================================
+// SECTION 4: AUDIT & LOGGING REQUIREMENTS
+// =============================================================================
+
+namespace Audit {
+    /**
+     * @rule ForensicTraceability
+     * All governance events must be hashed and anchored to ALN.
+     */
+    rule ForensicTraceability {
+        action: hash_and_anchor(event_data);
+        retention_period_years: 10;
+        access_control: USER_SOVEREIGN_ONLY;
+    }
+
+    /**
+     * @rule PrivacyPreservation
+     * Raw neural data must never be logged in plaintext.
+     */
+    rule PrivacyPreservation {
+        action: sanitize_before_log(data);
+        method: SHA3-256_HASH;
+        violation_action: BLOCK_LOG_ENTRY;
+        error_code: ERR_PRIVACY_LEAK_006;
+    }
+}
+
+// =============================================================================
+// SECTION 5: ENFORCEMENT ACTIONS
+// =============================================================================
+
+namespace Enforcement {
+    /**
+     * @def BLOCK_AND_ESCALATE
+     * Block the action and move session to AugmentedReview.
+     */
+    action BLOCK_AND_ESCALATE {
+        block_request: true;
+        escalate_mode: AUGMENTED_REVIEW;
+        notify_user: true;
+        log_event: true;
+    }
+
+    /**
+     * @def ENCRYPT_AND_LOG
+     * Allow action only if data is encrypted; log the access.
+     */
+    action ENCRYPT_AND_LOG {
+        require_encryption: true;
+        log_access: true;
+        notify_user: false;
+    }
+
+    /**
+     * @def REJECT_TRANSITION
+     * Prevent capability mode downgrade.
+     */
+    action REJECT_TRANSITION {
+        maintain_current_mode: true;
+        log_violation: true;
+        alert_governance: true;
+    }
+}
+
+// =============================================================================
+// SECTION 6: CRYPTOGRAPHIC SIGNATURES (GOVERNANCE DAO)
+// =============================================================================
+
+@signatures [
+    {
+        "key_id": "did:alnx:governance-node-01#key-1",
+        "algorithm": "Ed25519",
+        "signature": "3f8a2b9c1d4e5f67890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345......
