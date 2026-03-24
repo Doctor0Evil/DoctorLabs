@@ -1,0 +1,21 @@
+[ policy "weapon_proposal_gate" {
+  description "Block LEO/safety rules unless they pass neurorights and monotonicity checks."
+  version "1.0.0"
+  weapon_proposal_fields: [
+    "weapon_proposal",
+    "neuroright_violated",
+    "legal_basis",
+    "multisig_policy"
+  ]
+  rules: [
+    (rule block_unsafe_rules
+      (when (weapon_proposal_detected)
+        (do
+          (unless (neurorights_pass AND monotonicity_pass AND multisig_pass)
+            (reject "Rule violates security/compliance gates.")
+          )
+        )
+      )
+    )
+  ]
+} ]
