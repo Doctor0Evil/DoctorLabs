@@ -1,0 +1,20 @@
+[ policy "identity_host_blocklist" {
+  description "Forbid automated linking between Bostrom addresses, ALN DIDs, EEG profiles, and KYC identities."
+  version "1.0.0"
+  blocked_identities: [
+    "did:ion:...",  // Bostrom DID
+    "bci_profile:eeg_123",  // EEG profile
+    "kyc:external_id_456"  // External KYC
+  ]
+  rules: [
+    (rule block_crosslink
+      (when (identity_link_attempted)
+        (do
+          (unless (signed_exception_exists)
+            (reject "Crosslinking blocked: No identity-host exception.")
+          )
+        )
+      )
+    )
+  ]
+} ]
