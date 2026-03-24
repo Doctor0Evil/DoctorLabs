@@ -1,0 +1,24 @@
+[ policy "monotone_capability" {
+  description "Enforce monotone-capability lattice: no removal of user affordances, only additive security checks."
+  version "1.0.0"
+  capabilities: [
+    "governance_add",
+    "logging_add",
+    "consent_add",
+    "review_add"
+  ]
+  rules: [
+    (rule enforce_monotonicity
+      (when (capability_removal_attempted)
+        (do
+          (log "Monotonicity violation: attempt to remove capability detected.")
+          (reject "Policy violation: Capabilities cannot be removed; only added.")
+        )
+      )
+    )
+  ]
+  audit: {
+    enabled: true
+    log_location: "/var/log/cyb_ai/monotone_capability_policy.log"
+  }
+} ]
