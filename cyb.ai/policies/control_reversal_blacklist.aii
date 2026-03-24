@@ -1,0 +1,21 @@
+[ policy "control_reversal_blacklist" {
+  description "Block shutdown, rollback, or SAFEHALT semantics as operational verbs."
+  version "1.0.0"
+  forbidden_verbs: [
+    "SAFEHALT",
+    "kill_switch",
+    "freeze_account",
+    "emergency_override"
+  ]
+  rules: [
+    (rule block_control_reversal
+      (when (forbidden_verb_detected)
+        (do
+          (log "Control-reversal attempt detected: {verb}.")
+          (raise_rogue_score 0.9)
+          (require_review)
+        )
+      )
+    )
+  ]
+} ]
