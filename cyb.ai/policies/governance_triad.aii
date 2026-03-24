@@ -1,22 +1,94 @@
 [ policy "governance_triad" {
-  description "Normal → AugmentedLog → AugmentedReview triad for high-risk operations."
-  version "1.0.0"
-  modes: ["Normal", "AugmentedLog", "AugmentedReview"]
-  risk_threshold: 0.8 // Q_max metadata
-  operations: [
-    "api_key_creation",
-    "device_link",
-    "log_export",
-    "embedding_access"
+  description "Normal → AugmentedLog → AugmentedReview governance triad over the monotone lattice, neurorights-aware."
+  version "1.1.0"
+
+  imports: [
+    "/cyb.ai/policies/monotone_capability_lattice.aii"
   ]
+
+  modes: [
+    { id: "Normal",         state_ref: "state.normal" },
+    { id: "AugmentedLog",   state_ref: "state.aug_log" },
+    { id: "AugmentedReview",state_ref: "state.aug_review" }
+  ]
+
+  risk_thresholds: {
+    low_to_log:   0.3,   // RM >= 0.3 → AugmentedLog
+    log_to_review:0.8    // RM >= 0.8 → AugmentedReview
+  }
+
+  // Map sensitive operations to neurorights and required governance
+  operations: [
+    {
+      id: "api_key_creation",
+      neurorights: ["mental_privacy", "personal_identity"],
+      min_mode: "AugmentedReview"
+    },
+    {
+      id: "device_link",
+      neurorights: ["mental_integrity"],
+      min_mode: "AugmentedReview"
+    },
+    {
+      id: "log_export",
+      neurorights: ["mental_privacy"],
+      min_mode: "AugmentedLog"
+    },
+    {
+      id: "embedding_access",
+      neurorights: ["mental_privacy", "cognitive_liberty"],
+      min_mode: "AugmentedLog"
+    }
+  ]
+
+  // Mode selection is a pure function of RM, not allowed to change U
   rules: [
-    (rule escalate_to_review
-      (when (risk_score > risk_threshold)
+    (rule set_mode_from_risk
+      (when (risk_score_updated)
         (do
-          (log "Escalate to AugmentedReview mode.")
-          (require_review "original_action")
+          (if (risk_score < risk_thresholds.low_to_log)
+              (set_mode "Normal")
+          )
+          (if (risk_score >= risk_thresholds.low_to_log && risk_score < risk_thresholds.log_to_review)
+              (set_mode "AugmentedLog")
+          )
+          (if (risk_score >= risk_thresholds.log_to_review)
+              (set_mode "AugmentedReview")
+          )
+        )
+      )
+    ),
+
+    // Wrap high-rights operations in review, never remove them
+    (rule enforce_neurorights_governance
+      (when (operation_invoked op_id)
+        (do
+          (let required_mode = get_operation_min_mode(op_id))
+          (unless (current_mode_at_least(required_mode))
+            (log "Escalating governance mode for neurorights-sensitive op: {op_id}.")
+            (set_mode required_mode)
+          )
+          (if (current_mode == "AugmentedReview")
+              (wrap_as "require_review(original_action)")
+          )
+        )
+      )
+    ),
+
+    // Safety: forbid any rule that tries to disable a user capability
+    (rule forbid_user_capability_drop
+      (when (policy_update_attempted)
+        (do
+          (unless (invariant_holds "monotone_capabilities")
+            (reject "Policy update violates monotone capability invariant (user_cap drop).")
+          )
         )
       )
     )
   ]
+
+  audit: {
+    enabled: true
+    log_location: "/var/log/cyb_ai/governance_triad.log"
+  }
 } ]
