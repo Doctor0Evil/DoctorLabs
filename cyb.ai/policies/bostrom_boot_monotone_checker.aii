@@ -1,0 +1,180 @@
+aln
+
+ALN Governance Contract
+  Contract ID  CON-DOCTORLABS-MONOTONE-BOOT-2025-001
+  Effective    2025-01-20T00:00:00Z
+  Expires      2026-01-20T00:00:00Z
+  Authority    DoctorLabs Sovereign Governance DAO
+  Purpose      "On-ledger, neurorights-aligned monotonicity checker for capability-mode transitions. This contract can only attest or reject; it cannot change capabilities."
+
+  Safety Invariants
+    1. MonotoneUserCaps     "No transition may remove any user capability."
+    2. ModeOrderOnlyUp      "Mode transitions must respect the lattice order Normal ≤ AugmentedLog ≤ AugmentedReview."
+    3. NeurorightsPreserved "Capabilities tagged as MentalIntegrity or CognitiveLiberty cannot be removed by governance."
+    4. NoControlReversalOps "CONTROL-REVERSAL-SEMANTICS may not appear as executable operations; only as diagnostic tags."
+
+import DoctorLabs.Capabilities
+import CapabilityLattice
+import Neurorights
+
+namespace BostromBoot.Monotone
+
+  // -----------------------------------------------------------------------
+  // Types
+  // -----------------------------------------------------------------------
+
+  struct CapabilityState
+    id          string
+    mode        CapabilityLattice.Mode
+    usercaps    list DoctorLabs.Capabilities
+    govcaps     list DoctorLabs.Capabilities
+
+  struct TransitionProposal
+    id               string
+    from_state_id    string
+    to_state_id      string
+    from_mode        CapabilityLattice.Mode
+    to_mode          CapabilityLattice.Mode
+    from_usercaps    list DoctorLabs.Capabilities
+    to_usercaps      list DoctorLabs.Capabilities
+    from_govcaps     list DoctorLabs.Capabilities
+    to_govcaps       list DoctorLabs.Capabilities
+    roguescore       float
+    proposer_did     string
+    // content IDs instead of raw hashes
+    policy_content_id    string    // e.g., "content-id:extended_capability_lattice.aii"
+    lattice_content_id   string    // e.g., "content-id:bostrom_boot_monotone_checker.aii"
+
+  enum CheckResult
+    ACCEPT
+    REJECT_MONOTONE
+    REJECT_NEURORIGHTS
+    REJECT_MODE_ORDER
+    REJECT_MALFORMED
+
+  struct CheckReceipt
+    id                string
+    proposal_id       string
+    result            CheckResult
+    reason            string
+    // Evidence only; no control or shutdown semantics.
+    evidence_bundle_id string
+    timestamp         string
+
+  // -----------------------------------------------------------------------
+  // Helper functions (pure, total)
+  // -----------------------------------------------------------------------
+
+  fn is_mode_monotone(old: CapabilityLattice.Mode, new: CapabilityLattice.Mode) -> bool
+    match old, new
+      CapabilityLattice.Mode.NORMAL, CapabilityLattice.Mode.NORMAL           => true
+      CapabilityLattice.Mode.NORMAL, CapabilityLattice.Mode.AUGMENTEDLOG     => true
+      CapabilityLattice.Mode.NORMAL, CapabilityLattice.Mode.AUGMENTEDREVIEW  => true
+      CapabilityLattice.Mode.AUGMENTEDLOG, CapabilityLattice.Mode.AUGMENTEDLOG    => true
+      CapabilityLattice.Mode.AUGMENTEDLOG, CapabilityLattice.Mode.AUGMENTEDREVIEW => true
+      CapabilityLattice.Mode.AUGMENTEDREVIEW, CapabilityLattice.Mode.AUGMENTEDREVIEW => true
+      _, _ => false
+
+  fn user_caps_monotone(from_caps: list DoctorLabs.Capabilities,
+                        to_caps:   list DoctorLabs.Capabilities) -> bool
+    // Return true if from_caps ⊆ to_caps
+    subseteq(from_caps, to_caps)
+
+  fn neurorights_preserved(from_caps: list DoctorLabs.Capabilities,
+                           to_caps:   list DoctorLabs.Capabilities) -> bool
+    // Any capability that instantiates MentalIntegrity or CognitiveLiberty
+    // must not be removed.
+    let critical = filter_capabilities_by_neurorights(
+      from_caps,
+      [Neurorights.MentalIntegrity, Neurorights.CognitiveLiberty]
+    )
+    subseteq(critical, to_caps)
+
+  fn well_formed(proposal: TransitionProposal) -> bool
+    // Minimal sanity: matching IDs, modes not null, content IDs present.
+    proposal.from_state_id != "" &&
+    proposal.to_state_id   != "" &&
+    proposal.policy_content_id  != "" &&
+    proposal.lattice_content_id != ""
+
+  // -----------------------------------------------------------------------
+  // Public entrypoint: Monotonicity Attestation
+  // -----------------------------------------------------------------------
+
+  contract MonotoneChecker
+
+    entry check_transition(proposal: TransitionProposal) -> CheckReceipt
+      let now_ts = now_iso8601()
+      let receipt_id = concat("monocheck:", proposal.id, ":", now_ts)
+
+      if not well_formed(proposal) then
+        return CheckReceipt
+          id                 receipt_id
+          proposal_id        proposal.id
+          result             CheckResult.REJECT_MALFORMED
+          reason             "Malformed proposal: missing IDs or content references."
+          evidence_bundle_id emit_evidence(proposal, "REJECT_MALFORMED")
+          timestamp          now_ts
+      end
+
+      if not is_mode_monotone(proposal.from_mode, proposal.to_mode) then
+        return CheckReceipt
+          id                 receipt_id
+          proposal_id        proposal.id
+          result             CheckResult.REJECT_MODE_ORDER
+          reason             "Mode monotonicity violation: attempted downgrade."
+          evidence_bundle_id emit_evidence(proposal, "REJECT_MODE_ORDER")
+          timestamp          now_ts
+      end
+
+      if not user_caps_monotone(proposal.from_usercaps, proposal.to_usercaps) then
+        return CheckReceipt
+          id                 receipt_id
+          proposal_id        proposal.id
+          result             CheckResult.REJECT_MONOTONE
+          reason             "User capability set would shrink; forbidden by lattice."
+          evidence_bundle_id emit_evidence(proposal, "REJECT_MONOTONE")
+          timestamp          now_ts
+      end
+
+      if not neurorights_preserved(proposal.from_usercaps, proposal.to_usercaps) then
+        return CheckReceipt
+          id                 receipt_id
+          proposal_id        proposal.id
+          result             CheckResult.REJECT_NEURORIGHTS
+          reason             "Neurorights violation: MentalIntegrity or CognitiveLiberty capability removed."
+          evidence_bundle_id emit_evidence(proposal, "REJECT_NEURORIGHTS")
+          timestamp          now_ts
+      end
+
+      // If all checks pass, attest monotonicity. This contract does NOT
+      // perform the transition; it only issues a receipt.
+      return CheckReceipt
+        id                 receipt_id
+        proposal_id        proposal.id
+        result             CheckResult.ACCEPT
+        reason             "Monotone transition: user capabilities preserved, modes escalate only."
+        evidence_bundle_id emit_evidence(proposal, "ACCEPT")
+        timestamp          now_ts
+
+    // -------------------------------------------------------------------
+    // Evidence emission: returns an abstract bundle ID tied to this chain.
+    // No cryptographic primitive names; Ledger handles details.
+    // -------------------------------------------------------------------
+
+    fn emit_evidence(proposal: TransitionProposal,
+                     outcome: string) -> string
+      let bundle_id = concat("EB-MONOTONE-", proposal.id, "-", outcome)
+      // On-chain, this would:
+      //  - record proposal summary,
+      //  - record outcome and reasons,
+      //  - bind to policy_content_id and lattice_content_id,
+      //  - bind to proposer DID,
+      //  - never include raw neural or XR content.
+      log_event
+        id         bundle_id
+        category   "MONOTONICITY_ATTESTATION"
+        outcome    outcome
+        proposal   proposal
+      end
+      bundle_id
