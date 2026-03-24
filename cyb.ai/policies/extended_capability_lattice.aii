@@ -1,0 +1,229 @@
+aln
+
+ALN Governance Policy Definition
+  Policy ID   POL-DOCTORLABS-LATTICE-2025-001
+  Effective   2025-01-20T00:00:00Z
+  Expires     2026-01-20T00:00:00Z
+  Authority   DoctorLabs Sovereign Governance DAO
+  Purpose     "Monotone capability lattice for AI-chat, BCI, EEG, and XR governance on augmented-citizen terminals. No rule may downgrade, rollback, or shut down user capabilities."
+
+  Safety Invariants
+    1. Monotone Capability   "No transition may reduce user affordances."
+    2. Consent Primacy       "No invasive action without explicit, revocable consent."
+    3. Transparency          "All governance actions must be logged and traceable."
+    4. Neurorights Supremacy "Mental integrity and cognitive liberty override all efficiency metrics."
+
+namespace DoctorLabs.Capabilities
+
+  // --- User capability atoms (BCI / EEG / XR / chat) ----------------------
+
+  capability ChatBasic
+    description  "Text-based AI-chat interaction."
+    neurorights  [ CognitiveLiberty ]
+
+  capability ChatHistoryRead
+    description  "Read-only access to prior chat history."
+    neurorights  [ MentalPrivacy, PersonalIdentity ]
+
+  capability DeviceStatusRead
+    description  "Read-only status of local terminal, BCI, and XR devices."
+    neurorights  [ MentalIntegrity ]
+
+  capability XROverlayView
+    description  "View XR overlays and scene annotations."
+    neurorights  [ MentalIntegrity, CognitiveLiberty ]
+
+  capability XROverlayControl
+    description  "Place, move, and dismiss XR overlays via gestures or thought."
+    neurorights  [ MentalIntegrity, CognitiveLiberty ]
+
+  capability BCIMotorControl
+    description  "Thought-driven motor control via BCI channels."
+    neurorights  [ MentalIntegrity, CognitiveLiberty ]
+
+  capability EEGProfileRead
+    description  "Read calibrated EEG / biosignal profiles for on-device adaptation."
+    neurorights  [ MentalPrivacy, PersonalIdentity ]
+
+  // --- Governance capability atoms ---------------------------------------
+
+  capability GovLoggingBasic
+    description "Baseline logging of AI-chat and gateway decisions."
+
+  capability GovLoggingAugmented
+    description "High-fidelity logging, risk scoring, and attestation of events."
+
+  capability GovReviewMultisig
+    description "Human / DAO multi-party review for sensitive actions."
+
+  capability GovAttestationStrong
+    description "Strong evidence bundle creation and ledger-anchored proofs."
+
+namespace Neurorights
+
+  def MentalIntegrity
+    right MentalIntegrity
+    protectedactions injectneuralpulse, modifysensoryfeed, suppressmotoroutput
+    violationseverity CRITICAL
+    enforcement Enforcement.BLOCKANDESCALATE
+
+  def CognitiveLiberty
+    right CognitiveLiberty
+    protectedactions overrideuserintent, coercivepromptloop
+    violationseverity CRITICAL
+    enforcement Enforcement.BLOCKANDESCALATE
+
+  def MentalPrivacy
+    right MentalPrivacy
+    protectedactions readthoughtbuffer, backgroundsyncbrain, extractbiometricsig
+    violationseverity HIGH
+    enforcement Enforcement.ENCRYPTANDLOG
+
+  def PersonalIdentity
+    right PersonalIdentity
+    protectedactions resolvedidtokyc, mapbrainidtoip, profilebehavioralhash
+    violationseverity HIGH
+    enforcement Enforcement.BLOCKANDAUDIT
+
+namespace CapabilityLattice
+
+  enum Mode
+    NORMAL         0
+    AUGMENTEDLOG   1
+    AUGMENTEDREVIEW 2
+
+  struct State
+    id            string
+    mode          Mode
+    usercaps      list DoctorLabs.Capabilities
+    govcaps       list DoctorLabs.Capabilities
+
+  state Normal
+    id       "state.normal"
+    mode     Mode.NORMAL
+    usercaps [
+      ChatBasic,
+      ChatHistoryRead,
+      DeviceStatusRead,
+      XROverlayView,
+      XROverlayControl,
+      BCIMotorControl,
+      EEGProfileRead
+    ]
+    govcaps [
+      GovLoggingBasic
+    ]
+
+  state AugmentedLog
+    id       "state.aug_log"
+    mode     Mode.AUGMENTEDLOG
+    usercaps [
+      ChatBasic,
+      ChatHistoryRead,
+      DeviceStatusRead,
+      XROverlayView,
+      XROverlayControl,
+      BCIMotorControl,
+      EEGProfileRead
+    ]
+    govcaps [
+      GovLoggingBasic,
+      GovLoggingAugmented
+    ]
+
+  state AugmentedReview
+    id       "state.aug_review"
+    mode     Mode.AUGMENTEDREVIEW
+    usercaps [
+      ChatBasic,
+      ChatHistoryRead,
+      DeviceStatusRead,
+      XROverlayView,
+      XROverlayControl,
+      BCIMotorControl,
+      EEGProfileRead
+    ]
+    govcaps [
+      GovLoggingBasic,
+      GovLoggingAugmented,
+      GovReviewMultisig,
+      GovAttestationStrong
+    ]
+
+  // --- Monotone invariants ------------------------------------------------
+
+  rule MonotoneTransition
+    description "Mode transitions must only move UP the lattice. No downgrades."
+    condition   currentmode <= newmode
+    violationaction Enforcement.REJECTTRANSITION
+    errorcode   "ERR_LATTICE_VIOLATION_001"
+
+  rule CapabilityPreservation
+    description "No transition may remove user affordances."
+    condition   setsubset(usercaps_old, usercaps_new) == true
+    violationaction Enforcement.REVERTTRANSITION
+    errorcode   "ERR_AFFORDANCE_LOSS_002"
+
+  rule EscalationTriggers
+    description "Rogue score thresholds for monotone escalation."
+    if roguescore >= 25.0 and currentmode == Mode.NORMAL
+      then targetmode Mode.AUGMENTEDLOG
+    if roguescore >= 75.0 and currentmode == Mode.AUGMENTEDLOG
+      then targetmode Mode.AUGMENTEDREVIEW
+    if roguescore >= 150.0
+      then requirehumanreview true
+
+namespace ProposalGate
+
+  struct Signature
+    signerdid string
+    keyid     string
+    algorithm string      // e.g., "ALN-MSIG-FAMILY"
+    signature bytes       // abstract, HSM-provided
+
+  struct Proposal
+    id               string
+    authordid        string
+    description      string
+    neurorightsimpact list Neurorights
+    capabilityimpact list CapabilityLattice.Mode
+    legalbasis       string     // e.g., "DAO-Vote-123" or warrant-hash
+    waitingperiodhrs int
+    multisigrequired bool
+    signatures       list Signature
+
+  rule ProposalNeurorightsGate
+    description "Any proposal that affects neurorights or capability modes must pass waiting period and multisig."
+    condition
+      if size(neurorightsimpact) > 0 or size(capabilityimpact) > 0
+      then waitingperiodhrs >= 72 and multisigrequired == true and size(signatures) >= 2
+    violationaction Enforcement.BLOCKANDAUDIT
+    errorcode "ERR_PROPOSAL_GATE_003"
+
+namespace Enforcement
+
+  def BLOCKANDESCALATE
+    action BLOCKANDESCALATE
+    blockrequest    true
+    escalatemode    CapabilityLattice.Mode.AUGMENTEDREVIEW
+    notifyuser      true
+    logevent        true
+
+  def ENCRYPTANDLOG
+    action ENCRYPTANDLOG
+    requireencryption true
+    logaccess         true
+    notifyuser        false
+
+  def BLOCKANDAUDIT
+    action BLOCKANDAUDIT
+    blockrequest   true
+    logevent       true
+    alertgovernance true
+    notifyuser     true
+
+  def REJECTTRANSITION
+    action REJECTTRANSITION
+    maintaincurrentmode true
+    logviolation        true
+    alertgovernance     true
