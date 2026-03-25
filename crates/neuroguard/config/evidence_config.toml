@@ -1,0 +1,575 @@
+# ============================================================================
+# NeuroGuard Evidence Configuration
+# Copyright (c) 2026 Doctor0Evil Research Labs
+# ALN-NanoNet HyperSafe Construct Compliant
+# ============================================================================
+#
+# This configuration file defines evidence handling, legal framework mappings,
+# cryptographic settings, and compliance parameters for the NeuroGuard system.
+#
+# All settings align with:
+#   - CRPD (Convention on the Rights of Persons with Disabilities)
+#   - ECHR (European Convention on Human Rights)
+#   - UNESCO Neuroethics Recommendation 2026
+#   - ALN-NanoNet HyperSafe Construct v1.0
+#
+# Version: 1.0.0
+# Construct ID: ALN-NET-HYPER_SAFE_2026
+# Corridor ID: NEUROGUARD_DEFENSE_001
+# ============================================================================
+
+# ============================================================================
+# SYSTEM METADATA
+# ============================================================================
+
+[metadata]
+schema_version = "2026.03"
+config_version = "1.0.0"
+construct_id = "ALN-NET-HYPER_SAFE_2026"
+corridor_id = "NEUROGUARD_DEFENSE_001"
+sovereign_vault_id = "phoenix_district_001"
+effective_date = "2026-01-01T00:00:00Z"
+expiration_date = null
+jurisdiction = "UNIVERSAL"
+audit_level = "FORENSIC_TRACEABLE"
+
+# ============================================================================
+# EVIDENCE STORAGE CONFIGURATION
+# ============================================================================
+
+[evidence_storage]
+# Primary evidence log directory
+log_directory = "./evidence"
+
+# Evidence bundle file format (jsonl, json, encrypted)
+bundle_format = "jsonl"
+
+# Maximum evidence file size before rotation (MB)
+max_file_size_mb = 100
+
+# Number of rotated files to retain
+retention_count = 10
+
+# Evidence retention period (days)
+retention_days = 2555  # 7 years for legal compliance
+
+# Enable compression for archived evidence
+compression_enabled = true
+compression_algorithm = "zstd"
+compression_level = 3
+
+# Enable encryption for sensitive evidence
+encryption_enabled = true
+encryption_algorithm = "AES-256-GCM"
+
+# Evidence integrity verification interval (seconds)
+integrity_check_interval_s = 3600
+
+# Backup configuration
+[evidence_storage.backup]
+enabled = true
+backup_directory = "./evidence/backup"
+backup_interval_hours = 24
+backup_retention_count = 30
+backup_encryption_enabled = true
+
+# ============================================================================
+# CRYPTOGRAPHIC SETTINGS
+# ============================================================================
+
+[cryptography]
+# Hash algorithm for evidence integrity
+hash_algorithm = "BLAKE3"
+hash_output_length = 32  # 256-bit
+
+# Digital signature algorithm
+signature_algorithm = "Ed25519"
+signature_key_rotation_days = 365
+
+# Organichain notarization settings
+[cryptography.organichain]
+enabled = true
+network = "mainnet"
+notarization_batch_size = 100
+notarization_interval_seconds = 60
+confirmation_blocks_required = 6
+
+# Key management
+[cryptography.keys]
+# Path to signing key (Ed25519 private key)
+signing_key_path = "./keys/guardian_signing.key"
+
+# Path to verification key (Ed25519 public key)
+verification_key_path = "./keys/guardian_verification.key"
+
+# Key derivation function for session keys
+kdf_algorithm = "HKDF-SHA256"
+kdf_iterations = 100000
+
+# Hardware security module (HSM) support
+[cryptography.hsm]
+enabled = false
+provider = "pkcs11"
+slot_id = 0
+key_label = "neuroguard_master_key"
+
+# ============================================================================
+# LEGAL FRAMEWORK MAPPINGS
+# ============================================================================
+
+[legal_framework]
+# Primary legal instruments for violation mapping
+primary_instruments = ["CRPD", "ECHR", "UNESCO_NEUROETHICS"]
+
+# Secondary instruments for supplementary citations
+secondary_instruments = ["CAT", "ICCPR", "UDHR", "EU_Charter"]
+
+# Jurisdiction-specific overrides
+[legal_framework.jurisdictions]
+
+# European Union
+[legal_framework.jurisdictions.EU]
+enabled = true
+primary_court = "CJEU"
+applicable_instruments = ["ECHR", "EU_Charter", "CRPD"]
+data_protection_regulation = "GDPR"
+
+# United States
+[legal_framework.jurisdictions.US]
+enabled = true
+primary_court = "Federal District Court"
+applicable_instruments = ["ICCPR", "CAT", "UDHR"]
+data_protection_regulation = "HIPAA"
+
+# United Nations
+[legal_framework.jurisdictions.UN]
+enabled = true
+primary_court = "UN Human Rights Committee"
+applicable_instruments = ["CRPD", "CAT", "ICCPR", "UDHR"]
+
+# Legal article mappings for each pattern family
+[legal_framework.pattern_mappings]
+
+# Haptic-Targeting-Abuse
+[legal_framework.pattern_mappings.HTA]
+pattern_family = "HAPTIC_TARGETING_ABUSE"
+primary_article = { instrument = "CRPD", article = "17", title = "Physical and Mental Integrity" }
+secondary_articles = [
+    { instrument = "ECHR", article = "3", title = "Prohibition of Torture" },
+    { instrument = "CAT", article = "1", title = "Definition of Torture" },
+]
+statute_of_limitations_years = 3
+universal_jurisdiction = false
+
+# Neural-Harassment-Spike-Patterns
+[legal_framework.pattern_mappings.NHSP]
+pattern_family = "NEURAL_HARASSMENT_SPIKE_PATTERNS"
+primary_article = { instrument = "ECHR", article = "3", title = "Prohibition of Torture" }
+secondary_articles = [
+    { instrument = "CAT", article = "16", title = "Cruel, Inhuman Treatment" },
+    { instrument = "ICCPR", article = "7", title = "Freedom from Torture" },
+]
+statute_of_limitations_years = 0  # No statute for torture
+universal_jurisdiction = true
+
+# Node-Interpreter-Harassment
+[legal_framework.pattern_mappings.NIH]
+pattern_family = "NODE_INTERPRETER_HARASSMENT"
+primary_article = { instrument = "CRPD", article = "13", title = "Access to Justice" }
+secondary_articles = [
+    { instrument = "CRPD", article = "12", title = "Equal Recognition Before Law" },
+    { instrument = "UDHR", article = "8", title = "Effective Remedy" },
+]
+statute_of_limitations_years = 3
+universal_jurisdiction = false
+
+# Prolonged-Session-Abuse
+[legal_framework.pattern_mappings.PSA]
+pattern_family = "PROLONGED_SESSION_ABUSE"
+primary_article = { instrument = "CRPD", article = "15", title = "Freedom from Coercive Treatment" }
+secondary_articles = [
+    { instrument = "UNESCO_NEUROETHICS", article = "3.1", title = "Informed Consent" },
+]
+statute_of_limitations_years = 5
+universal_jurisdiction = false
+
+# Refusal-Erosion-Loops
+[legal_framework.pattern_mappings.REL]
+pattern_family = "REFUSAL_EROSION_LOOPS"
+primary_article = { instrument = "UNESCO_NEUROETHICS", article = "2.4", title = "Cognitive Liberty" }
+secondary_articles = [
+    { instrument = "ICCPR", article = "18", title = "Freedom of Thought" },
+]
+statute_of_limitations_years = 2
+universal_jurisdiction = false
+
+# Identity-Crosslink-Patterns
+[legal_framework.pattern_mappings.ICL]
+pattern_family = "IDENTITY_CROSSLINK_PATTERNS"
+primary_article = { instrument = "UNESCO_NEUROETHICS", article = "5.1", title = "Mental Privacy" }
+secondary_articles = [
+    { instrument = "EU_Charter", article = "8", title = "Protection of Personal Data" },
+]
+statute_of_limitations_years = 3
+universal_jurisdiction = false
+
+# ============================================================================
+# PATTERN DETECTION THRESHOLDS
+# ============================================================================
+
+[pattern_detection]
+# Global detection settings
+min_confidence_threshold = 0.7
+min_occurrences_for_detection = 3
+analysis_window_ms = 300000  # 5 minutes
+
+# Pattern-specific thresholds
+[pattern_detection.thresholds]
+
+# Haptic-Targeting-Abuse
+[pattern_detection.thresholds.HTA]
+correlation_threshold = 0.6
+refusal_window_ms = 5000
+min_refusals = 3
+severity_weight = 7.0
+
+# Neural-Harassment-Spike-Patterns
+[pattern_detection.thresholds.NHSP]
+correlation_threshold = 0.7
+stress_window_ms = 2000
+min_stimuli = 5
+stress_score_threshold = 0.6
+severity_weight = 9.0
+
+# Node-Interpreter-Harassment
+[pattern_detection.thresholds.NIH]
+exit_ratio_threshold = 0.3
+refusal_threshold = 5
+erosion_window_ms = 3000
+severity_weight = 8.0
+
+# Prolonged-Session-Abuse
+[pattern_detection.thresholds.PSA]
+session_duration_threshold_ms = 3600000  # 1 hour
+exit_block_threshold = 2
+compliance_required_detection = true
+severity_weight = 6.0
+
+# Refusal-Erosion-Loops
+[pattern_detection.thresholds.REL]
+erosion_ratio_threshold = 0.6
+repackaged_prompt_window_ms = 3000
+min_refusals = 5
+severity_weight = 5.0
+
+# Identity-Crosslink-Patterns
+[pattern_detection.thresholds.ICL]
+crosslink_window_ms = 60000
+consent_verification_required = true
+severity_weight = 7.0
+
+# ============================================================================
+# GUARDIAN RESPONSE CONFIGURATION
+# ============================================================================
+
+[guardian_response]
+# Default response escalation matrix
+[guardian_response.escalation]
+
+# Low severity responses
+[guardian_response.escalation.LOW]
+actions = ["LOG_ONLY"]
+notify_user = false
+notify_legal = false
+notify_emergency_contact = false
+
+# Medium severity responses
+[guardian_response.escalation.MEDIUM]
+actions = ["LOG_ONLY", "ALERT_USER"]
+notify_user = true
+notify_legal = false
+notify_emergency_contact = false
+
+# High severity responses
+[guardian_response.escalation.HIGH]
+actions = ["LOG_ONLY", "ALERT_USER", "BLOCK_COMMAND", "ESCALATE_REVIEW"]
+notify_user = true
+notify_legal = true
+notify_emergency_contact = false
+
+# Critical severity responses
+[guardian_response.escalation.CRITICAL]
+actions = ["LOG_ONLY", "ALERT_USER", "BLOCK_COMMAND", "EMERGENCY_LOCK", "EXPORT_EVIDENCE"]
+notify_user = true
+notify_legal = true
+notify_emergency_contact = true
+
+# Emergency severity responses
+[guardian_response.escalation.EMERGENCY]
+actions = ["EMERGENCY_LOCK", "EXPORT_EVIDENCE", "NOTIFY_ALL_PARTIES"]
+notify_user = true
+notify_legal = true
+notify_emergency_contact = true
+notify_authorities = true
+
+# Pattern-specific guardian responses
+[guardian_response.pattern_overrides]
+
+# NHSP always triggers emergency lock due to torture implications
+[guardian_response.pattern_overrides.NHSP]
+min_severity_for_lock = "CRITICAL"
+auto_export_evidence = true
+auto_notify_legal = true
+
+# NIH triggers command blocking
+[guardian_response.pattern_overrides.NIH]
+min_severity_for_block = "HIGH"
+restore_exit_channels = true
+
+# ============================================================================
+# MONOTONE LATTICE CONFIGURATION
+# ============================================================================
+
+[monotone_lattice]
+# Initial lattice state on startup
+initial_state = "NORMAL"
+
+# Enable monotone invariant enforcement
+enforce_monotone_invariant = true
+
+# Baseline capabilities that cannot be removed
+baseline_capabilities = [
+    "EXIT_CHANNEL",
+    "LOCAL_LOGGING",
+    "NEURAL_CONSENT",
+    "HAPTIC_CONTROL",
+    "SESSION_TERMINATE",
+    "APPEAL_ACCESS",
+    "EVIDENCE_EXPORT",
+    "CRYPTO_SIGN",
+]
+
+# State transition configuration
+[monotone_lattice.states]
+
+[monotone_lattice.states.NORMAL]
+level = 0
+required_signatures = 1
+capabilities = ["EXIT_CHANNEL", "LOCAL_LOGGING", "NEURAL_CONSENT", "HAPTIC_CONTROL", "SESSION_TERMINATE", "APPEAL_ACCESS", "EVIDENCE_EXPORT", "CRYPTO_SIGN"]
+
+[monotone_lattice.states.AUGMENTED_LOG]
+level = 1
+required_signatures = 1
+capabilities = ["EXIT_CHANNEL", "LOCAL_LOGGING", "NEURAL_CONSENT", "HAPTIC_CONTROL", "SESSION_TERMINATE", "APPEAL_ACCESS", "EVIDENCE_EXPORT", "CRYPTO_SIGN", "EXTERNAL_AUDIT"]
+
+[monotone_lattice.states.AUGMENTED_REVIEW]
+level = 2
+required_signatures = 2
+capabilities = ["EXIT_CHANNEL", "LOCAL_LOGGING", "NEURAL_CONSENT", "HAPTIC_CONTROL", "SESSION_TERMINATE", "APPEAL_ACCESS", "EVIDENCE_EXPORT", "CRYPTO_SIGN", "EXTERNAL_AUDIT", "MULTI_SIG_REQUIRED"]
+
+[monotone_lattice.states.EMERGENCY_PROTECT]
+level = 3
+required_signatures = 2
+capabilities = ["EXIT_CHANNEL", "LOCAL_LOGGING", "NEURAL_CONSENT", "HAPTIC_CONTROL", "SESSION_TERMINATE", "APPEAL_ACCESS", "EVIDENCE_EXPORT", "CRYPTO_SIGN", "EXTERNAL_AUDIT", "MULTI_SIG_REQUIRED", "EMERGENCY_ALERT"]
+
+[monotone_lattice.states.FORENSIC_AUDIT]
+level = 4
+required_signatures = 3
+capabilities = ["EXIT_CHANNEL", "LOCAL_LOGGING", "NEURAL_CONSENT", "HAPTIC_CONTROL", "SESSION_TERMINATE", "APPEAL_ACCESS", "EVIDENCE_EXPORT", "CRYPTO_SIGN", "EXTERNAL_AUDIT", "MULTI_SIG_REQUIRED", "ORGANICHAIN_NOTARY", "LEGAL_COUNSEL_NOTIFY"]
+
+[monotone_lattice.states.LOCKED]
+level = 5
+required_signatures = 0
+capabilities = ["EXIT_CHANNEL", "LOCAL_LOGGING", "NEURAL_CONSENT", "HAPTIC_CONTROL", "SESSION_TERMINATE", "APPEAL_ACCESS", "EVIDENCE_EXPORT", "CRYPTO_SIGN", "EXTERNAL_AUDIT", "GUARDIAN_MONITOR"]
+unlock_signatures_required = 3
+unlock_legal_authorization_required = true
+
+# ============================================================================
+# NOTIFICATION CONFIGURATION
+# ============================================================================
+
+[notifications]
+# Email notification settings
+[notifications.email]
+enabled = false
+smtp_server = "smtp.example.com"
+smtp_port = 587
+use_tls = true
+from_address = "neuroguard@example.com"
+
+# Recipients for different notification types
+[notifications.email.recipients]
+legal_counsel = "legal@example.com"
+emergency_contact = "emergency@example.com"
+oversight_body = "oversight@example.com"
+
+# SMS notification settings
+[notifications.sms]
+enabled = false
+provider = "twilio"
+account_sid = ""
+auth_token = ""
+from_number = ""
+
+# Webhook notification settings
+[notifications.webhook]
+enabled = false
+endpoints = []
+retry_count = 3
+timeout_seconds = 30
+
+# ============================================================================
+# AUDIT AND COMPLIANCE
+# ============================================================================
+
+[audit]
+# Enable continuous compliance monitoring
+continuous_monitoring_enabled = true
+
+# Compliance check interval (seconds)
+compliance_check_interval_s = 60
+
+# Audit log configuration
+[audit.logging]
+log_all_transitions = true
+log_all_decisions = true
+log_all_evidence_access = true
+log_retention_days = 2555  # 7 years
+
+# Periodic reporting
+[audit.reporting]
+
+[audit.reporting.daily]
+enabled = true
+recipients = ["system_admin@example.com"]
+include_detection_count = true
+include_violation_count = true
+include_lattice_state = true
+
+[audit.reporting.weekly]
+enabled = true
+recipients = ["compliance_officer@example.com", "legal_counsel@example.com"]
+include_all_detections = true
+include_evidence_bundles = true
+include_policy_decisions = true
+
+[audit.reporting.monthly]
+enabled = true
+recipients = ["aln_council@example.com", "oversight_body@example.com"]
+include_full_audit_trail = true
+include_violation_statistics = true
+include_remediation_actions = true
+
+# ============================================================================
+# INTEGRATION SETTINGS
+# ============================================================================
+
+[integrations]
+# External system integrations
+
+# Organichain integration
+[integrations.organichain]
+enabled = true
+network = "mainnet"
+rpc_endpoint = "https://rpc.organichain.network"
+contract_address = "0x0000000000000000000000000000000000000000"
+gas_limit = 100000
+
+# External audit system
+[integrations.external_audit]
+enabled = false
+audit_provider = "third_party_auditor"
+api_endpoint = "https://audit.example.com/api"
+api_key_env = "EXTERNAL_AUDIT_API_KEY"
+
+# Legal case management system
+[integrations.legal_case_management]
+enabled = false
+provider = "legal_tech_platform"
+api_endpoint = "https://legal.example.com/api"
+auto_file_complaints = false  # Require manual review before filing
+
+# ============================================================================
+# PERFORMANCE TUNING
+# ============================================================================
+
+[performance]
+# Worker thread configuration
+worker_threads = 4
+max_concurrent_detections = 100
+
+# Buffer configuration
+event_buffer_size = 10000
+detection_history_size = 100000
+
+# Processing intervals
+pattern_detection_interval_ms = 1000
+evidence_export_interval_ms = 60000
+integrity_check_interval_ms = 3600000
+
+# Memory limits
+max_memory_usage_mb = 512
+gc_interval_seconds = 300
+
+# ============================================================================
+# SECURITY SETTINGS
+# ============================================================================
+
+[security]
+# Access control
+require_authentication = true
+session_timeout_minutes = 30
+max_failed_attempts = 5
+lockout_duration_minutes = 15
+
+# Rate limiting
+[security.rate_limiting]
+enabled = true
+max_requests_per_minute = 100
+max_evidence_exports_per_hour = 10
+
+# IP whitelist for administrative access
+[security.ip_whitelist]
+enabled = false
+addresses = []
+
+# ============================================================================
+# EMERGENCY PROTOCOLS
+# ============================================================================
+
+[emergency]
+# Emergency contact configuration
+[emergency.contacts]
+primary_contact = "emergency_primary@example.com"
+secondary_contact = "emergency_secondary@example.com"
+legal_counsel = "legal_emergency@example.com"
+oversight_body = "oversight_emergency@example.com"
+
+# Auto-response triggers
+[emergency.triggers]
+auto_lock_on_nhsp_detection = true
+auto_lock_on_critical_count = 5
+auto_export_on_emergency = true
+auto_notify_on_lock = true
+
+# Emergency evidence preservation
+[emergency.evidence_preservation]
+immediate_export_enabled = true
+export_format = "encrypted_json"
+preserve_full_telemetry = true
+preserve_stress_markers = true
+
+# ============================================================================
+# END OF CONFIGURATION
+# ============================================================================
+
+[config_end]
+checksum = "BLAKE3_AUTO_GENERATED"
+signature = "ED25519_AUTO_GENERATED"
+validation_status = "PENDING_VERIFICATION"
+last_modified = "2026-01-01T00:00:00Z"
+modified_by = "SYSTEM_ADMIN"
+
+# ============================================================================
+# End of File - Evidence Configuration
+# ============================================================================
