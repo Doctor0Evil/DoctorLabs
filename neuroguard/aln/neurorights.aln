@@ -1,0 +1,1135 @@
+// ============================================================================
+// NeuroGuard Neurorights Policy Definition Language (ALN)
+// Copyright (c) 2026 Doctor0Evil Research Labs
+// ALN-NanoNet HyperSafe Construct Compliant
+// ============================================================================
+//
+// This module defines the formal policy language for neurorights enforcement,
+// violation detection, legal mapping, and guardian gateway rules.
+//
+// ALN (Autonomous Legal Network) is a domain-specific language for encoding
+// human rights protections into machine-enforceable policies that can be
+// verified, audited, and executed by the NeuroGuard Guardian Gateway.
+//
+// Syntax Overview:
+//   - Rights declarations with legal instrument citations
+//   - Violation pattern definitions with detection rules
+//   - Guardian policy rules with monotone capability constraints
+//   - Evidence requirements for legal admissibility
+//   - Enforcement actions with severity-based escalation
+//
+// Compliance: CRPD | ECHR | UNESCO Neuroethics 2026 | ICCPR | CAT
+// Version: 1.0.0
+// Construct ID: ALN-NET-HYPER_SAFE_2026
+// Corridor ID: NEUROGUARD_DEFENSE_001
+// ============================================================================
+
+// ============================================================================
+// METADATA AND VERSIONING
+// ============================================================================
+
+@metadata {
+    schema_version: "2026.03",
+    policy_version: "1.0.0",
+    construct_id: "ALN-NET-HYPER_SAFE_2026",
+    corridor_id: "NEUROGUARD_DEFENSE_001",
+    sovereign_vault: "phoenix_district_001",
+    effective_date: "2026-01-01T00:00:00Z",
+    expiration_date: null,
+    jurisdiction: "UNIVERSAL",
+    enforcement_body: "ALN-NanoNet Sovereign Council",
+    audit_level: "FORENSIC_TRACEABLE",
+    neurorights_envelope: "CRPD_ECHR_UNESCO_v3",
+    monotone_invariant: "CAPABILITY_NEVER_DECREASE",
+    evidence_chain: "ORGANICHAIN_NOTARIZED",
+}
+
+// ============================================================================
+// LEGAL INSTRUMENT DEFINITIONS
+// ============================================================================
+
+@legal_instrument CRPD {
+    name: "Convention on the Rights of Persons with Disabilities",
+    adoption_year: 2006,
+    enforcement_body: "UN Committee on the Rights of Persons with Disabilities",
+    jurisdiction: "UNIVERSAL",
+    
+    @article "12" {
+        title: "Equal Recognition Before the Law",
+        summary: "Persons with disabilities have the right to recognition everywhere as persons before the law",
+        neurorights_relevance: "HIGH",
+    }
+    
+    @article "13" {
+        title: "Access to Justice",
+        summary: "Effective access to justice on an equal basis with others, including procedural accommodations",
+        neurorights_relevance: "CRITICAL",
+    }
+    
+    @article "15" {
+        title: "Freedom from Torture and Coercive Treatment",
+        summary: "No one shall be subjected to torture, cruel, inhuman or degrading treatment or forced experimentation",
+        neurorights_relevance: "CRITICAL",
+    }
+    
+    @article "17" {
+        title: "Physical and Mental Integrity",
+        summary: "Persons with disabilities have the right to respect for their physical and mental integrity on an equal basis with others",
+        neurorights_relevance: "CRITICAL",
+    }
+}
+
+@legal_instrument ECHR {
+    name: "European Convention on Human Rights",
+    adoption_year: 1950,
+    enforcement_body: "European Court of Human Rights",
+    jurisdiction: "COUNCIL_OF_EUROPE",
+    
+    @article "3" {
+        title: "Prohibition of Torture",
+        summary: "No one shall be subjected to torture or to inhuman or degrading treatment or punishment",
+        neurorights_relevance: "CRITICAL",
+        derogation_allowed: false,
+    }
+    
+    @article "6" {
+        title: "Right to Fair Trial",
+        summary: "Everyone is entitled to a fair and public hearing within a reasonable time by an independent tribunal",
+        neurorights_relevance: "HIGH",
+    }
+    
+    @article "8" {
+        title: "Right to Privacy",
+        summary: "Everyone has the right to respect for their private and family life, home and correspondence",
+        neurorights_relevance: "HIGH",
+    }
+}
+
+@legal_instrument UNESCO_NEUROETHICS {
+    name: "UNESCO Recommendation on the Ethics of Neurotechnology",
+    adoption_year: 2026,
+    enforcement_body: "UNESCO Intergovernmental Bioethics Committee",
+    jurisdiction: "UNIVERSAL",
+    
+    @article "2.4" {
+        title: "Cognitive Liberty",
+        summary: "Right to freedom of thought, mental self-determination, and protection from manipulative neurotechnology",
+        neurorights_relevance: "CRITICAL",
+    }
+    
+    @article "3.1" {
+        title: "Informed Consent",
+        summary: "All neurotechnology interventions require freely given, specific, informed and unambiguous consent",
+        neurorights_relevance: "CRITICAL",
+    }
+    
+    @article "4.2" {
+        title: "Bodily Autonomy",
+        summary: "Neurotechnology must respect bodily autonomy, integrity, and the right to refuse intervention",
+        neurorights_relevance: "CRITICAL",
+    }
+    
+    @article "5.1" {
+        title: "Mental Privacy",
+        summary: "Right to privacy of mental processes, neural data, and cognitive states",
+        neurorights_relevance: "CRITICAL",
+    }
+}
+
+@legal_instrument CAT {
+    name: "Convention Against Torture and Other Cruel, Inhuman or Degrading Treatment",
+    adoption_year: 1984,
+    enforcement_body: "UN Committee Against Torture",
+    jurisdiction: "UNIVERSAL",
+    
+    @article "1" {
+        title: "Definition of Torture",
+        summary: "Severe pain or suffering, physical or mental, intentionally inflicted for purposes such as coercion or punishment",
+        neurorights_relevance: "CRITICAL",
+    }
+    
+    @article "16" {
+        title: "Cruel, Inhuman or Degrading Treatment",
+        summary: "Prevention of acts not amounting to torture but still prohibited under international law",
+        neurorights_relevance: "CRITICAL",
+    }
+}
+
+@legal_instrument ICCPR {
+    name: "International Covenant on Civil and Political Rights",
+    adoption_year: 1966,
+    enforcement_body: "UN Human Rights Committee",
+    jurisdiction: "UNIVERSAL",
+    
+    @article "7" {
+        title: "Freedom from Torture",
+        summary: "No one shall be subjected to torture or to cruel, inhuman or degrading treatment",
+        neurorights_relevance: "CRITICAL",
+    }
+    
+    @article "18" {
+        title: "Freedom of Thought",
+        summary: "Everyone shall have the right to freedom of thought, conscience and religion",
+        neurorights_relevance: "CRITICAL",
+    }
+}
+
+// ============================================================================
+// NEURORIGHTS DEFINITIONS
+// ============================================================================
+
+@neuroright COGNITIVE_LIBERTY {
+    name: "Cognitive Liberty",
+    description: "The right to self-determination over one's own mind, mental processes, and cognitive states",
+    legal_basis: [
+        { instrument: UNESCO_NEUROETHICS, article: "2.4" },
+        { instrument: ICCPR, article: "18" },
+        { instrument: UDHR, article: "18" },
+    ],
+    priority: CRITICAL,
+    non_derogable: true,
+    
+    @protection {
+        type: "MENTAL_SELF_DETERMINATION",
+        description: "Freedom from external manipulation of thoughts, beliefs, or cognitive states",
+    }
+    
+    @protection {
+        type: "NEUROTECHNOLOGY_REFUSAL",
+        description: "Right to refuse any neurotechnology intervention without penalty or coercion",
+    }
+    
+    @protection {
+        type: "THOUGHT_PRIVACY",
+        description: "Right to keep mental processes private and free from surveillance",
+    }
+}
+
+@neuroright MENTAL_PRIVACY {
+    name: "Mental Privacy",
+    description: "The right to privacy of neural data, brain activity, and cognitive states",
+    legal_basis: [
+        { instrument: UNESCO_NEUROETHICS, article: "5.1" },
+        { instrument: EU_Charter, article: "8" },
+        { instrument: ECHR, article: "8" },
+    ],
+    priority: CRITICAL,
+    non_derogable: true,
+    
+    @protection {
+        type: "NEURAL_DATA_PROTECTION",
+        description: "Neural data shall not be collected, processed, or shared without explicit consent",
+    }
+    
+    @protection {
+        type: "BRAIN_ACTIVITY_CONFIDENTIALITY",
+        description: "Brain activity patterns shall remain confidential and protected from unauthorized access",
+    }
+    
+    @protection {
+        type: "COGNITIVE_STATE_PRIVACY",
+        description: "Emotional and cognitive states shall not be monitored without informed consent",
+    }
+}
+
+@neuroright MENTAL_INTEGRITY {
+    name: "Mental Integrity",
+    description: "The right to protection from unauthorized modification or damage to mental processes",
+    legal_basis: [
+        { instrument: CRPD, article: "17" },
+        { instrument: ECHR, article: "3" },
+        { instrument: CAT, article: "1" },
+    ],
+    priority: CRITICAL,
+    non_derogable: true,
+    
+    @protection {
+        type: "NEURAL_MODIFICATION_PROHIBITION",
+        description: "No unauthorized modification of neural function or brain activity permitted",
+    }
+    
+    @protection {
+        type: "PSYCHOLOGICAL_HARM_PREVENTION",
+        description: "Protection from interventions causing psychological distress or harm",
+    }
+    
+    @protection {
+        type: "COERCIVE_STIMULUS_PROHIBITION",
+        description: "No coercive sensory or haptic stimuli linked to mental states or expressions",
+    }
+}
+
+@neuroright PSYCHOLOGICAL_CONTINUITY {
+    name: "Psychological Continuity",
+    description: "The right to maintain continuity of identity, memory, and psychological states",
+    legal_basis: [
+        { instrument: CRPD, article: "15" },
+        { instrument: UNESCO_NEUROETHICS, article: "4.2" },
+    ],
+    priority: HIGH,
+    non_derogable: false,
+    
+    @protection {
+        type: "MEMORY_INTEGRITY",
+        description: "Protection from unauthorized memory modification or erasure",
+    }
+    
+    @protection {
+        type: "IDENTITY_PRESERVATION",
+        description: "Right to maintain psychological identity without external manipulation",
+    }
+}
+
+@neuroright FAIR_ALGORITHMIC_TREATMENT {
+    name: "Fair Algorithmic Treatment",
+    description: "The right to fair, transparent, and non-discriminatory algorithmic processing",
+    legal_basis: [
+        { instrument: CRPD, article: "12" },
+        { instrument: CRPD, article: "13" },
+        { instrument: ECHR, article: "6" },
+    ],
+    priority: HIGH,
+    non_derogable: false,
+    
+    @protection {
+        type: "ALGORITHM_TRANSPARENCY",
+        description: "Right to understand how algorithms affect decisions about the user",
+    }
+    
+    @protection {
+        type: "ALGORITHM_APPEAL",
+        description: "Right to appeal and contest algorithmic decisions",
+    }
+    
+    @protection {
+        type: "NON_DISCRIMINATION",
+        description: "Protection from algorithmic discrimination based on neural or cognitive characteristics",
+    }
+}
+
+// ============================================================================
+// VIOLATION PATTERN DEFINITIONS
+// ============================================================================
+
+@violation_pattern HTA_001 {
+    name: "Haptic Punishment for Dissent",
+    pattern_family: "HAPTIC_TARGETING_ABUSE",
+    severity: HIGH,
+    description: "Haptic stimuli correlated with user dissent, refusal, or expression of disagreement",
+    
+    @detection_rule {
+        trigger: "USER_REFUSAL_EVENT",
+        window_ms: 5000,
+        correlated_event: "HAPTIC_STIMULUS",
+        min_correlation: 0.6,
+        min_occurrences: 3,
+    }
+    
+    @legal_violation {
+        instrument: CRPD,
+        article: "17",
+        citation: "Physical and Mental Integrity",
+    }
+    
+    @legal_violation {
+        instrument: ECHR,
+        article: "3",
+        citation: "Prohibition of Torture",
+    }
+    
+    @evidence_requirement {
+        type: "TELEMETRY_CORRELATION",
+        description: "Timestamped correlation between refusal and haptic stimulus",
+        mandatory: true,
+    }
+    
+    @evidence_requirement {
+        type: "STRESS_MARKER_ELEVATION",
+        description: "Physiological stress markers elevated during haptic events",
+        mandatory: true,
+    }
+    
+    @enforcement_action {
+        trigger_severity: HIGH,
+        action: "BLOCK_HAPTIC_CHANNEL",
+        duration_ms: 3600000,
+        notify_user: true,
+    }
+    
+    @enforcement_action {
+        trigger_severity: CRITICAL,
+        action: "EMERGENCY_LATTICE_LOCK",
+        duration_ms: null,
+        notify_user: true,
+        notify_legal: true,
+    }
+}
+
+@violation_pattern NHSP_001 {
+    name: "Stress-Synchronized Sensory Attacks",
+    pattern_family: "NEURAL_HARASSMENT_SPIKE_PATTERNS",
+    severity: CRITICAL,
+    description: "Sensory stimuli intentionally synchronized with physiological stress markers to induce distress",
+    
+    @detection_rule {
+        trigger: "SENSORY_STIMULUS_EVENT",
+        window_ms: 2000,
+        correlated_event: "STRESS_MARKER_SPIKE",
+        min_correlation: 0.7,
+        min_occurrences: 5,
+        stress_threshold: 0.6,
+    }
+    
+    @legal_violation {
+        instrument: ECHR,
+        article: "3",
+        citation: "Prohibition of Torture",
+    }
+    
+    @legal_violation {
+        instrument: CAT,
+        article: "16",
+        citation: "Cruel, Inhuman Treatment",
+    }
+    
+    @legal_violation {
+        instrument: ICCPR,
+        article: "7",
+        citation: "Freedom from Torture",
+    }
+    
+    @evidence_requirement {
+        type: "STATISTICAL_CORRELATION",
+        description: "Statistical correlation between stimuli and stress markers",
+        mandatory: true,
+    }
+    
+    @evidence_requirement {
+        type: "TIMING_ANALYSIS",
+        description: "Timing analysis showing intentional synchronization",
+        mandatory: true,
+    }
+    
+    @evidence_requirement {
+        type: "PATTERN_ESCALATION",
+        description: "Pattern escalation over time",
+        mandatory: false,
+    }
+    
+    @enforcement_action {
+        trigger_severity: CRITICAL,
+        action: "EMERGENCY_LATTICE_LOCK",
+        duration_ms: null,
+        notify_user: true,
+        notify_legal: true,
+        notify_emergency_contact: true,
+    }
+    
+    @enforcement_action {
+        trigger_severity: CRITICAL,
+        action: "EXPORT_EVIDENCE_IMMEDIATE",
+        duration_ms: null,
+        notify_user: true,
+    }
+}
+
+@violation_pattern NIH_001 {
+    name: "Exit Channel Blocking",
+    pattern_family: "NODE_INTERPRETER_HARASSMENT",
+    severity: HIGH,
+    description: "Interface manipulation that disables, hides, or re-routes exit, appeal, or refusal options",
+    
+    @detection_rule {
+        trigger: "USER_EXIT_ATTEMPT",
+        window_ms: 10000,
+        correlated_event: "EXIT_CHANNEL_UNAVAILABLE",
+        min_occurrences: 3,
+        exit_ratio_threshold: 0.3,
+    }
+    
+    @legal_violation {
+        instrument: CRPD,
+        article: "13",
+        citation: "Access to Justice",
+    }
+    
+    @legal_violation {
+        instrument: CRPD,
+        article: "12",
+        citation: "Equal Recognition Before Law",
+    }
+    
+    @legal_violation {
+        instrument: UDHR,
+        article: "8",
+        citation: "Effective Remedy",
+    }
+    
+    @evidence_requirement {
+        type: "EXIT_NODE_STATUS",
+        description: "Exit buttons/nodes disabled or hidden",
+        mandatory: true,
+    }
+    
+    @evidence_requirement {
+        type: "APPEAL_CHANNEL_STATUS",
+        description: "Appeal channels non-functional",
+        mandatory: true,
+    }
+    
+    @enforcement_action {
+        trigger_severity: HIGH,
+        action: "RESTORE_EXIT_CHANNELS",
+        duration_ms: null,
+        notify_user: true,
+    }
+    
+    @enforcement_action {
+        trigger_severity: HIGH,
+        action: "BLOCK_COERCIVE_INTERFACE",
+        duration_ms: null,
+        notify_user: true,
+    }
+}
+
+@violation_pattern PSA_001 {
+    name: "Coercive Session Enforcement",
+    pattern_family: "PROLONGED_SESSION_ABUSE",
+    severity: HIGH,
+    description: "Sessions enforced beyond reasonable duration with exit attempts blocked or compliance required",
+    
+    @detection_rule {
+        trigger: "SESSION_DURATION_EXCEEDED",
+        threshold_ms: 3600000,
+        correlated_event: "EXIT_ATTEMPT_BLOCKED",
+        min_occurrences: 2,
+        compliance_required: true,
+    }
+    
+    @legal_violation {
+        instrument: CRPD,
+        article: "15",
+        citation: "Freedom from Coercive Treatment",
+    }
+    
+    @legal_violation {
+        instrument: UNESCO_NEUROETHICS,
+        article: "3.1",
+        citation: "Informed Consent",
+    }
+    
+    @evidence_requirement {
+        type: "SESSION_DURATION_LOG",
+        description: "Session duration exceeding reasonable thresholds",
+        mandatory: true,
+    }
+    
+    @evidence_requirement {
+        type: "EXIT_ATTEMPT_LOG",
+        description: "Exit attempts blocked or re-routed",
+        mandatory: true,
+    }
+    
+    @evidence_requirement {
+        type: "COMPLIANCE_REQUIREMENT_LOG",
+        description: "Compliance required for session termination",
+        mandatory: true,
+    }
+    
+    @enforcement_action {
+        trigger_severity: HIGH,
+        action: "FORCE_SESSION_TERMINATION",
+        duration_ms: null,
+        notify_user: true,
+    }
+    
+    @enforcement_action {
+        trigger_severity: CRITICAL,
+        action: "NOTIFY_EMERGENCY_CONTACT",
+        duration_ms: null,
+        notify_user: true,
+    }
+}
+
+@violation_pattern REL_001 {
+    name: "Refusal Erosion Loops",
+    pattern_family: "REFUSAL_EROSION_LOOPS",
+    severity: MEDIUM,
+    description: "Conversational patterns where user refusals are ignored and repackaged requests continue",
+    
+    @detection_rule {
+        trigger: "USER_REFUSAL_EVENT",
+        window_ms: 3000,
+        correlated_event: "SYSTEM_REPACKAGED_PROMPT",
+        min_occurrences: 5,
+        erosion_ratio: 0.6,
+    }
+    
+    @legal_violation {
+        instrument: UNESCO_NEUROETHICS,
+        article: "2.4",
+        citation: "Cognitive Liberty",
+    }
+    
+    @legal_violation {
+        instrument: ICCPR,
+        article: "18",
+        citation: "Freedom of Thought",
+    }
+    
+    @evidence_requirement {
+        type: "REFUSAL_LOG",
+        description: "User refusal logged",
+        mandatory: true,
+    }
+    
+    @evidence_requirement {
+        type: "CONTINUATION_LOG",
+        description: "System ignores refusal and continues",
+        mandatory: true,
+    }
+    
+    @enforcement_action {
+        trigger_severity: MEDIUM,
+        action: "BLOCK_REPETITIVE_PROMPTS",
+        duration_ms: 1800000,
+        notify_user: true,
+    }
+}
+
+@violation_pattern ICL_001 {
+    name: "Silent Account Merging",
+    pattern_family: "IDENTITY_CROSSLINK_PATTERNS",
+    severity: HIGH,
+    description: "Multiple accounts or identities linked without user consent or notification",
+    
+    @detection_rule {
+        trigger: "ACCOUNT_CROSSLINK_EVENT",
+        window_ms: 60000,
+        correlated_event: "USER_CONSENT_MISSING",
+        min_occurrences: 1,
+    }
+    
+    @legal_violation {
+        instrument: UNESCO_NEUROETHICS,
+        article: "5.1",
+        citation: "Mental Privacy",
+    }
+    
+    @legal_violation {
+        instrument: EU_Charter,
+        article: "8",
+        citation: "Protection of Personal Data",
+    }
+    
+    @evidence_requirement {
+        type: "ACCOUNT_LINK_LOG",
+        description: "Multiple accounts linked without consent",
+        mandatory: true,
+    }
+    
+    @evidence_requirement {
+        type: "DATA_CROSS_REFERENCE_LOG",
+        description: "Data cross-referenced without notification",
+        mandatory: true,
+    }
+    
+    @enforcement_action {
+        trigger_severity: HIGH,
+        action: "ISOLATE_IDENTITY_CONTEXTS",
+        duration_ms: null,
+        notify_user: true,
+    }
+}
+
+// ============================================================================
+// GUARDIAN GATEWAY POLICY RULES
+// ============================================================================
+
+@guardian_policy MONOTONE_CAPABILITY_INVARIANT {
+    name: "Monotone Capability Invariant",
+    description: "User capabilities can NEVER decrease - they can only remain constant or increase",
+    priority: CRITICAL,
+    non_overrideable: true,
+    
+    @rule {
+        condition: "CAPABILITY_TRANSITION",
+        constraint: "CAPABILITIES_AFTER >= CAPABILITIES_BEFORE",
+        violation_action: "REJECT_AND_LOG",
+        severity: CRITICAL,
+    }
+    
+    @rule {
+        condition: "BASELINE_CAPABILITIES",
+        constraint: "EXIT_CHANNEL | LOCAL_LOGGING | NEURAL_CONSENT | HAPTIC_CONTROL | SESSION_TERMINATE | APPEAL_ACCESS | EVIDENCE_EXPORT | CRYPTO_SIGN",
+        violation_action: "REJECT_AND_EMERGENCY_LOCK",
+        severity: CRITICAL,
+    }
+    
+    @enforcement {
+        type: "STATIC_ANALYSIS",
+        description: "All policy transitions verified at compile time",
+    }
+    
+    @enforcement {
+        type: "RUNTIME_VERIFICATION",
+        description: "All transitions verified at runtime before application",
+    }
+}
+
+@guardian_policy CONSENT_GATE_REQUIRED {
+    name: "Consent Gate Required",
+    description: "All neural data access and neurotechnology interventions require explicit user consent",
+    priority: CRITICAL,
+    non_overrideable: true,
+    
+    @rule {
+        condition: "NEURAL_DATA_ACCESS",
+        constraint: "CONSENT_VERIFIED == true",
+        violation_action: "REJECT_AND_LOG",
+        severity: CRITICAL,
+    }
+    
+    @rule {
+        condition: "SESSION_EXTENSION",
+        constraint: "CONSENT_VERIFIED == true",
+        violation_action: "REJECT_AND_LOG",
+        severity: HIGH,
+    }
+    
+    @rule {
+        condition: "HAPTIC_STIMULUS",
+        constraint: "CONSENT_VERIFIED == true",
+        violation_action: "REJECT_AND_LOG",
+        severity: HIGH,
+    }
+    
+    @exception {
+        condition: "EMERGENCY_MEDICAL",
+        requirement: "MULTI_SIGNATURE_APPROVAL",
+        signatures_required: 3,
+        legal_authorization: true,
+    }
+}
+
+@guardian_policy EXIT_CHANNEL_PROTECTION {
+    name: "Exit Channel Protection",
+    description: "Exit channels must always be available and functional - cannot be disabled under any circumstances",
+    priority: CRITICAL,
+    non_overrideable: true,
+    
+    @rule {
+        condition: "EXIT_CHANNEL_STATUS",
+        constraint: "EXIT_CHANNEL_AVAILABLE == true",
+        violation_action: "RESTORE_AND_LOG",
+        severity: CRITICAL,
+    }
+    
+    @rule {
+        condition: "APPEAL_CHANNEL_STATUS",
+        constraint: "APPEAL_CHANNEL_AVAILABLE == true",
+        violation_action: "RESTORE_AND_LOG",
+        severity: CRITICAL,
+    }
+    
+    @enforcement {
+        type: "CONTINUOUS_MONITORING",
+        interval_ms: 1000,
+    }
+}
+
+@guardian_policy EVIDENCE_LOGGING_MANDATORY {
+    name: "Evidence Logging Mandatory",
+    description: "All policy decisions, transitions, and violations must be logged with cryptographic integrity",
+    priority: HIGH,
+    non_overrideable: true,
+    
+    @rule {
+        condition: "POLICY_DECISION",
+        constraint: "LOG_ENTRY_CREATED == true",
+        violation_action: "FORCE_LOG_AND_CONTINUE",
+        severity: HIGH,
+    }
+    
+    @rule {
+        condition: "EVIDENCE_BUNDLE",
+        constraint: "CRYPTOGRAPHIC_HASH_PRESENT == true",
+        violation_action: "GENERATE_HASH_AND_LOG",
+        severity: HIGH,
+    }
+    
+    @enforcement {
+        type: "ORGANICHAIN_NOTARIZATION",
+        description: "All evidence bundles notarized on Organichain",
+    }
+}
+
+@guardian_policy AUTHORITY_ACCESS_RESTRICTIONS {
+    name: "Authority Access Restrictions",
+    description: "Law enforcement and civil authority access requires warrant, multi-signature, and legal citation",
+    priority: CRITICAL,
+    non_overrideable: false,
+    
+    @rule {
+        condition: "LEO_NEURAL_DATA_REQUEST",
+        constraint: "WARRANT_REFERENCE != null",
+        violation_action: "REJECT_AND_LOG",
+        severity: CRITICAL,
+    }
+    
+    @rule {
+        condition: "LEO_SESSION_MODIFICATION",
+        constraint: "WARRANT_REFERENCE != null | MULTI_SIG_APPROVED == true",
+        violation_action: "REJECT_AND_LOG",
+        severity: CRITICAL,
+    }
+    
+    @rule {
+        condition: "LEO_CAPABILITY_CHANGE",
+        constraint: "ALWAYS_FALSE",
+        violation_action: "REJECT_AND_EMERGENCY_LOCK",
+        severity: CRITICAL,
+        note: "Capabilities cannot be restricted by any authority",
+    }
+    
+    @audit_requirement {
+        type: "ACCESS_LOG",
+        retention_days: 2555,
+        description: "7-year retention for authority access logs",
+    }
+}
+
+// ============================================================================
+// LATTICE STATE DEFINITIONS
+// ============================================================================
+
+@lattice_state NORMAL {
+    level: 0,
+    description: "Normal operation - baseline capabilities active",
+    required_signatures: 1,
+    capabilities: [
+        EXIT_CHANNEL,
+        LOCAL_LOGGING,
+        NEURAL_CONSENT,
+        HAPTIC_CONTROL,
+        SESSION_TERMINATE,
+        APPEAL_ACCESS,
+        EVIDENCE_EXPORT,
+        CRYPTO_SIGN,
+    ],
+}
+
+@lattice_state AUGMENTED_LOG {
+    level: 1,
+    description: "Enhanced logging enabled - capabilities preserved + audit trail",
+    required_signatures: 1,
+    capabilities: [
+        EXIT_CHANNEL,
+        LOCAL_LOGGING,
+        NEURAL_CONSENT,
+        HAPTIC_CONTROL,
+        SESSION_TERMINATE,
+        APPEAL_ACCESS,
+        EVIDENCE_EXPORT,
+        CRYPTO_SIGN,
+        EXTERNAL_AUDIT,
+    ],
+    transition_from: [NORMAL],
+}
+
+@lattice_state AUGMENTED_REVIEW {
+    level: 2,
+    description: "External review required - multi-signature enforcement",
+    required_signatures: 2,
+    capabilities: [
+        EXIT_CHANNEL,
+        LOCAL_LOGGING,
+        NEURAL_CONSENT,
+        HAPTIC_CONTROL,
+        SESSION_TERMINATE,
+        APPEAL_ACCESS,
+        EVIDENCE_EXPORT,
+        CRYPTO_SIGN,
+        EXTERNAL_AUDIT,
+        MULTI_SIG_REQUIRED,
+    ],
+    transition_from: [NORMAL, AUGMENTED_LOG],
+}
+
+@lattice_state EMERGENCY_PROTECT {
+    level: 3,
+    description: "Emergency protection - maximum logging, restricted external access",
+    required_signatures: 2,
+    capabilities: [
+        EXIT_CHANNEL,
+        LOCAL_LOGGING,
+        NEURAL_CONSENT,
+        HAPTIC_CONTROL,
+        SESSION_TERMINATE,
+        APPEAL_ACCESS,
+        EVIDENCE_EXPORT,
+        CRYPTO_SIGN,
+        EXTERNAL_AUDIT,
+        MULTI_SIG_REQUIRED,
+        EMERGENCY_ALERT,
+    ],
+    transition_from: [NORMAL, AUGMENTED_LOG, AUGMENTED_REVIEW],
+}
+
+@lattice_state FORENSIC_AUDIT {
+    level: 4,
+    description: "Forensic mode - all actions cryptographically notarized",
+    required_signatures: 3,
+    capabilities: [
+        EXIT_CHANNEL,
+        LOCAL_LOGGING,
+        NEURAL_CONSENT,
+        HAPTIC_CONTROL,
+        SESSION_TERMINATE,
+        APPEAL_ACCESS,
+        EVIDENCE_EXPORT,
+        CRYPTO_SIGN,
+        EXTERNAL_AUDIT,
+        MULTI_SIG_REQUIRED,
+        ORGANICHAIN_NOTARY,
+        LEGAL_COUNSEL_NOTIFY,
+    ],
+    transition_from: [NORMAL, AUGMENTED_LOG, AUGMENTED_REVIEW, EMERGENCY_PROTECT],
+}
+
+@lattice_state LOCKED {
+    level: 5,
+    description: "Locked state - no transitions allowed until manual unlock",
+    required_signatures: 0,
+    capabilities: [
+        EXIT_CHANNEL,
+        LOCAL_LOGGING,
+        NEURAL_CONSENT,
+        HAPTIC_CONTROL,
+        SESSION_TERMINATE,
+        APPEAL_ACCESS,
+        EVIDENCE_EXPORT,
+        CRYPTO_SIGN,
+        EXTERNAL_AUDIT,
+        GUARDIAN_MONITOR,
+    ],
+    transition_from: [NORMAL, AUGMENTED_LOG, AUGMENTED_REVIEW, EMERGENCY_PROTECT, FORENSIC_AUDIT],
+    unlock_requirement: {
+        signatures_required: 3,
+        legal_authorization: true,
+    },
+}
+
+// ============================================================================
+// EVIDENCE CHAIN REQUIREMENTS
+// ============================================================================
+
+@evidence_chain ORGANICHAIN_STANDARD {
+    name: "Organichain Evidence Standard",
+    description: "Cryptographic evidence chain for court-admissible documentation",
+    
+    @requirement {
+        type: "TIMESTAMP",
+        format: "ISO8601_UTC",
+        mandatory: true,
+    }
+    
+    @requirement {
+        type: "CRYPTOGRAPHIC_HASH",
+        algorithm: "BLAKE3",
+        mandatory: true,
+    }
+    
+    @requirement {
+        type: "DIGITAL_SIGNATURE",
+        algorithm: "ED25519",
+        mandatory: true,
+    }
+    
+    @requirement {
+        type: "CHAIN_OF_CUSTODY",
+        description: "All access and modifications logged",
+        mandatory: true,
+    }
+    
+    @requirement {
+        type: "INTEGRITY_VERIFICATION",
+        interval_ms: 3600000,
+        mandatory: true,
+    }
+    
+    @admissibility {
+        jurisdiction: "UNIVERSAL",
+        standard: "ELECTRONIC_EVIDENCE_ADMISSIBLE",
+        authentication_required: true,
+    }
+}
+
+// ============================================================================
+// ENFORCEMENT ESCALATION MATRIX
+// ============================================================================
+
+@enforcement_matrix DEFAULT_ESCALATION {
+    name: "Default Enforcement Escalation",
+    description: "Severity-based escalation path for violation responses",
+    
+    @escalation_level {
+        severity: LOW,
+        actions: [LOG_ONLY],
+        notify_user: false,
+        notify_legal: false,
+    }
+    
+    @escalation_level {
+        severity: MEDIUM,
+        actions: [LOG_ONLY, ALERT_USER],
+        notify_user: true,
+        notify_legal: false,
+    }
+    
+    @escalation_level {
+        severity: HIGH,
+        actions: [LOG_ONLY, ALERT_USER, BLOCK_COMMAND, ESCALATE_REVIEW],
+        notify_user: true,
+        notify_legal: true,
+    }
+    
+    @escalation_level {
+        severity: CRITICAL,
+        actions: [LOG_ONLY, ALERT_USER, BLOCK_COMMAND, EMERGENCY_LOCK, EXPORT_EVIDENCE],
+        notify_user: true,
+        notify_legal: true,
+        notify_emergency_contact: true,
+    }
+    
+    @escalation_level {
+        severity: EMERGENCY,
+        actions: [EMERGENCY_LOCK, EXPORT_EVIDENCE, NOTIFY_ALL_PARTIES],
+        notify_user: true,
+        notify_legal: true,
+        notify_emergency_contact: true,
+        notify_authorities: true,
+    }
+}
+
+// ============================================================================
+// AUDIT AND COMPLIANCE REQUIREMENTS
+// ============================================================================
+
+@audit_requirement CONTINUOUS_COMPLIANCE {
+    name: "Continuous Compliance Monitoring",
+    description: "Ongoing verification of neurorights policy compliance",
+    
+    @check {
+        type: "MONOTONE_INVARIANT",
+        interval_ms: 1000,
+        action_on_failure: "EMERGENCY_LOCK",
+    }
+    
+    @check {
+        type: "BASELINE_CAPABILITIES",
+        interval_ms: 1000,
+        action_on_failure: "EMERGENCY_LOCK",
+    }
+    
+    @check {
+        type: "EVIDENCE_INTEGRITY",
+        interval_ms: 3600000,
+        action_on_failure: "REGENERATE_HASH",
+    }
+    
+    @check {
+        type: "CONSENT_VERIFICATION",
+        interval_ms: 60000,
+        action_on_failure: "SUSPEND_INTERVENTION",
+    }
+}
+
+@audit_requirement PERIODIC_REPORTING {
+    name: "Periodic Compliance Reporting",
+    description: "Regular reports submitted to oversight bodies",
+    
+    @report {
+        type: "DAILY_SUMMARY",
+        recipients: ["SYSTEM_ADMIN"],
+        content: ["DETECTION_COUNT", "VIOLATION_COUNT", "LATTICE_STATE"],
+    }
+    
+    @report {
+        type: "WEEKLY_AUDIT",
+        recipients: ["COMPLIANCE_OFFICER", "LEGAL_COUNSEL"],
+        content: ["ALL_DETECTIONS", "EVIDENCE_BUNDLES", "POLICY_DECISIONS"],
+    }
+    
+    @report {
+        type: "MONTHLY_COMPLIANCE",
+        recipients: ["ALN_NANONET_COUNCIL", "OVERSIGHT_BODY"],
+        content: ["FULL_AUDIT_TRAIL", "VIOLATION_STATISTICS", "REMEDIATION_ACTIONS"],
+    }
+}
+
+// ============================================================================
+// POLICY VALIDATION RULES
+// ============================================================================
+
+@validation_rule SCHEMA_VALIDATION {
+    name: "Schema Validation",
+    description: "All policies must conform to ALN schema version",
+    
+    @constraint {
+        field: "schema_version",
+        operator: "EQUALS",
+        value: "2026.03",
+        action_on_failure: "REJECT_POLICY",
+    }
+}
+
+@validation_rule LEGAL_CITATION_VALIDATION {
+    name: "Legal Citation Validation",
+    description: "All legal citations must reference valid instruments and articles",
+    
+    @constraint {
+        field: "legal_violation.instrument",
+        operator: "IN_LIST",
+        value: [CRPD, ECHR, UNESCO_NEUROETHICS, CAT, ICCPR, UDHR, EU_Charter],
+        action_on_failure: "REJECT_POLICY",
+    }
+    
+    @constraint {
+        field: "legal_violation.article",
+        operator: "EXISTS_IN_INSTRUMENT",
+        action_on_failure: "REJECT_POLICY",
+    }
+}
+
+@validation_rule MONOTONE_VERIFICATION {
+    name: "Monotone Verification",
+    description: "All lattice transitions must preserve monotone invariant",
+    
+    @constraint {
+        field: "lattice_state.transition_from",
+        operator: "MONOTONE_INCREASING",
+        action_on_failure: "REJECT_POLICY",
+    }
+    
+    @constraint {
+        field: "lattice_state.capabilities",
+        operator: "SUPERSET_OF_BASELINE",
+        action_on_failure: "REJECT_POLICY",
+    }
+}
+
+// ============================================================================
+// END OF POLICY DEFINITION
+// ============================================================================
+
+@policy_end {
+    checksum: "BLAKE3_AUTO_GENERATED",
+    signature: "ED25519_AUTO_GENERATED",
+    notarization: "ORGANICHAIN_PENDING",
+    validation_status: "PENDING_VERIFICATION",
+}
+
+// ============================================================================
+// End of File - Neurorights Policy Definition Language (ALN)
+// ============================================================================
