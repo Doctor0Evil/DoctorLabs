@@ -1,0 +1,110 @@
+# ============================================================================
+# NeuroGuard: Monotone Capability Defense System
+# Copyright (c) 2026 Doctor0Evil Research Labs
+# Licensed under ALN-NanoNet HyperSafe Construct Parameters
+# ============================================================================
+
+[package]
+name = "neuroguard"
+version = "0.1.0"
+edition = "2024"
+authors = ["Doctor0Evil <research@doctorlabs.phoenix>"]
+description = "Neurorights-compliant guardian gateway for covert control detection"
+license = "ALN-HYPER_SAFE_v1.0"
+repository = "https://github.com/doctorlabs/neuroguard"
+keywords = ["neurorights", "nanoswarm", "bcixr", "monotone", "organichain"]
+categories = ["security", "embedded", "no-std"]
+
+[features]
+default = ["std", "crypto", "telemetry"]
+std = []
+crypto = ["dep:sha3", "dep:ed25519-dalek"]
+telemetry = ["dep:serde", "dep:serde_json", "dep:chrono"]
+embedded = ["dep:cortex-m", "dep:embedded-hal"]
+organichain = ["crypto", "dep:blake3"]
+full_audit = ["telemetry", "organichain", "dep:tracing"]
+
+[dependencies]
+# Core runtime (no_std compatible)
+core = { version = "1.0", package = "rustc-std-workspace-core" }
+alloc = { version = "1.0", package = "rustc-std-workspace-alloc" }
+
+# Cryptographic primitives for evidence notarization
+sha3 = { version = "0.10", optional = true, default-features = false }
+ed25519-dalek = { version = "2.1", optional = true, features = ["zeroize"] }
+blake3 = { version = "1.5", optional = true, default-features = false }
+
+# Serialization for lexicon and evidence bundles
+serde = { version = "1.0", optional = true, features = ["derive"], default-features = false }
+serde_json = { version = "1.0", optional = true, default-features = false }
+chrono = { version = "0.4", optional = true, features = ["serde"], default-features = false }
+
+# Tracing for forensic audit trails
+tracing = { version = "0.1", optional = true, default-features = false }
+tracing-subscriber = { version = "0.3", optional = true, features = ["json"] }
+
+# Embedded HAL for BCI/XR device integration
+cortex-m = { version = "0.7", optional = true }
+embedded-hal = { version = "1.0", optional = true }
+
+# Pattern detection utilities
+regex = { version = "1.10", default-features = false, features = ["perf"] }
+lazy_static = { version = "1.4", features = ["spin_no_std"] }
+
+[dev-dependencies]
+criterion = "0.5"
+proptest = "1.4"
+tokio = { version = "1.35", features = ["full"] }
+
+[build-dependencies]
+cc = "1.0"
+bindgen = "0.69"
+
+[[bin]]
+name = "neuroguard_guardian"
+path = "src/main.rs"
+required-features = ["std"]
+
+[[bin]]
+name = "neuroguard_embedded"
+path = "src/main.rs"
+required-features = ["embedded"]
+
+[lib]
+name = "neuroguard_core"
+path = "src/lib.rs"
+crate-type = ["lib", "staticlib"]
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.dev]
+opt-level = 1
+debug = true
+
+# ============================================================================
+# ALN-NanoNet Compliance Metadata
+# ============================================================================
+[metadata.aln]
+construct_id = "ALN-NET-HYPER_SAFE_2026"
+sovereign_vault = "phoenix_district_001"
+neurorights_envelope = "CRPD_ECHR_UNESCO_v3"
+monotone_invariant = "CAPABILITY_NEVER_DECREASE"
+evidence_chain = "ORGANICHAIN_NOTARIZED"
+audit_level = "FORENSIC_TRACEABLE"
+
+[metadata.snc]
+# SovereignKnowledgeObject compliance
+schema_version = "2026.03"
+corridor_id = "NEUROGUARD_DEFENSE_001"
+eco_impact_metric = "ZERO_HARM_VERIFIED"
+fpic_capsule = "CONSENT_GATE_REQUIRED"
+karma_score_threshold = 85
+
+[package.metadata.docs.rs]
+features = ["std", "telemetry", "organichain"]
+rustdoc-args = ["--cfg", "docsrs"]
